@@ -1,0 +1,43 @@
+
+.notice {
+  position: fixed;
+  /* place below the navbar (approx 64px) with a small gap */
+  top: calc(64px + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1200;
+  min-width: 320px;
+  max-width: 760px;
+  padding: 6px;
+  pointer-events: auto;
+  animation: notice-slide .32s ease both;
+}
+
+.notice-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  color: #0b1720;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 20px 48px rgba(12,20,40,0.12);
+  border-left: 6px solid #16a34a; /* green accent */
+}
+
+.notice-icon { font-size: 16px; background: #ecfdf5; color: #16a34a; padding: 8px; border-radius: 999px }
+.notice-msg { flex: 1; font-weight: 700; font-size: 15px }
+.notice-close { background: transparent; border: none; color: #7b8a8f; font-size: 16px; cursor: pointer }
+
+.notice.notice-error .notice-inner { border-left-color: #ef4444 }
+
+@keyframes notice-slide {
+  from { transform: translate(-50%,-10px); opacity: 0 }
+  to { transform: translate(-50%,0); opacity: 1 }
+}
+
+@media (max-width: 640px) {
+  /* On small screens keep the notice below the mobile navbar (~56px) */
+  .notice { left: 12px; right: 12px; transform: none; top: calc(56px + 8px) }
+  .notice-inner { padding: 10px }
+}

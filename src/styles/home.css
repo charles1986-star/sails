@@ -1,0 +1,16 @@
+/* Landing page styles */
+.landing-sections { padding: 48px 0; background: linear-gradient(180deg,#ffffff,#fbfdfb); }
+.landing-intro { text-align: center; margin-bottom: 28px; }
+.landing-intro h2 { font-size: 28px; margin-bottom: 8px; }
+.landing-intro .lead { color: #55664f; max-width: 760px; margin: 0 auto; }
+
+.tiles-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 16px; }
+.tile-card { display: flex; gap: 12px; align-items: center; padding: 20px; border-radius: 12px; border: 1px solid #eef4ea; background: #fff; text-decoration: none; color: inherit; transition: transform .12s ease, box-shadow .12s ease; }
+.tile-card:hover { transform: translateY(-6px); box-shadow: 0 8px 20px rgba(16,138,0,0.08); }
+.tile-image { width: 64px; height: 64px; border-radius: 12px; background: linear-gradient(180deg,#f7fff7,#f0fff0); padding: 8px; box-shadow: 0 4px 10px rgba(16,138,0,0.04); }
+.tile-body h3 { margin: 0 0 6px 0; font-size: 18px; }
+.tile-body p { margin:0; color: #566751; font-size: 14px; }
+.tile-cta { margin-left: auto; color: var(--green); font-weight: 600; }
+
+@media (max-width: 980px) { .tiles-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 640px) { .tiles-grid { grid-template-columns: 1fr; } .tile-card { padding: 16px; } }

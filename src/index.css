@@ -1,0 +1,34 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.upwork-login-btn {
+  background-color: #ffffff;
+  color: #14a800;                 /* Upwork green */
+  border: 1px solid #14a800;
+  border-radius: 999px;           /* pill shape */
+  padding: 10px 24px;
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.upwork-login-btn:hover {
+  background-color: #f2fbf2;      /* subtle green tint */
+}
+
+.upwork-login-btn:active {
+  background-color: #e9f7ea;
+}

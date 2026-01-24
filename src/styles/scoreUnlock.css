@@ -1,0 +1,166 @@
+/* ScoreUnlock Component Styles */
+
+.score-unlock-card {
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  margin: 16px 0;
+  transition: all 0.2s ease;
+}
+
+.score-unlock-card:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.score-unlock-card.unlocked {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+}
+
+.unlocked-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #10b981;
+  color: white;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.unlocked-text {
+  color: #065f46;
+  font-size: 14px;
+  margin: 0;
+}
+
+.unlock-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.unlock-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.unlock-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.unlock-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #78350f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.unlock-description {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.unlock-price {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-align: right;
+}
+
+.price-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #d97706;
+}
+
+.price-unit {
+  font-size: 12px;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.unlock-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.balance-text {
+  font-weight: 500;
+}
+
+.insufficient {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.unlock-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.unlock-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, #f8b500 0%, #e89b0f 100%);
+}
+
+.unlock-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.unlock-btn:disabled {
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .score-unlock-card {
+    padding: 16px;
+    margin: 12px 0;
+  }
+
+  .unlock-content {
+    flex-direction: column;
+    gap: 12px;
+    border-bottom: none;
+    margin-bottom: 12px;
+    padding-bottom: 0;
+  }
+
+  .unlock-price {
+    justify-content: flex-start;
+  }
+
+  .price-amount {
+    font-size: 20px;
+  }
+}
