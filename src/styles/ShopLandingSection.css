@@ -1,0 +1,68 @@
+.shop-landing {
+  padding: 80px 20px;
+  background: #ffffff;
+}
+
+.shop-landing__content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+/* LEFT TEXT */
+.shop-landing__text h2 {
+  font-size: 36px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #0a2540;
+}
+
+.shop-landing__text p {
+  font-size: 18px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.shop-landing__btn {
+  padding: 14px 28px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: #14a800; /* Upwork-style green */
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.shop-landing__btn:hover {
+  background: #108a00;
+}
+
+/* RIGHT IMAGE */
+.shop-landing__image {
+  cursor: pointer;
+}
+
+.shop-landing__image img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.shop-landing__image img:hover {
+  transform: scale(1.02);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .shop-landing__content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}

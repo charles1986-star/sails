@@ -19,6 +19,7 @@ import ShipDetail from "./pages/ShipDetail";
 import ShipApply from "./pages/ShipApply";
 import Applications from "./pages/Applications";
 import MyAccount from "./pages/MyAccount";
+import SailsIntro from "./components/landing/SailsIntro";
 
 function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
