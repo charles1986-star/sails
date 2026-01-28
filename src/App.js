@@ -3,6 +3,8 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
+import Games from "./pages/Games";
+import GameDetail from "./pages/GameDetail";
 import Footer from "./components/Footer";
 import ScorePurchase from "./components/ScorePurchase";
 
@@ -20,6 +22,7 @@ import ShipApply from "./pages/ShipApply";
 import Applications from "./pages/Applications";
 import MyAccount from "./pages/MyAccount";
 import SailsIntro from "./components/landing/SailsIntro";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -70,6 +73,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop onBuyNow={setSelectedProduct} />} />
+        <Route path="/games" element={<Games />} />
+        <Route path="/games/:id" element={<GameDetail />} />
         <Route path="/cart" element={loggedIn ? <CartPage cart={cart} setCart={setCart} /> : <Navigate to="/" />} />
         
         <Route path="/articles" element={<Articles />} />
@@ -99,7 +104,9 @@ function App() {
       />
 
       <Notice message={notice} onClose={() => setNotice(null)} />
+      <ScrollToTop />
       <Footer />
+     
     </BrowserRouter>
   );
 }

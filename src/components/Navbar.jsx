@@ -28,14 +28,15 @@ export default function Navbar({ cartCount, loggedIn, onLoginToggle, onScoreClic
     <header className="navbar">
       <div className="navbar-container">
         {/* Logo updated for Sail Transport */}
-        <Link to="/" className="logo">
-          🚢 Sail Transport
-        </Link>
-
+        <div className="navbar-logo logo">
+          <img src="/images/logo.png" alt="Sail Transport Logo" />
+          Sail Transport
+        </div>
         <nav className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/ships">Ship Search</Link>
           <Link to="/applications">Applications</Link>
+          <Link to="/games">Games</Link>
           <Link to="/library">Library</Link>
           <Link to="/shop">Shop</Link>
           <Link to="/articles">Article</Link>

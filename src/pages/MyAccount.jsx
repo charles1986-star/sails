@@ -29,7 +29,7 @@ export default function MyAccount() {
 
   return (
     <>
-      <Navbar />
+     
       <div className="my-account-container">
         <h1>My Account</h1>
         <div className="account-sections">
@@ -142,7 +142,7 @@ export default function MyAccount() {
         onPurchaseSuccess={handlePurchaseSuccess}
       />
 
-      <Footer />
+      
     </>
   );
 }

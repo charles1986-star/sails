@@ -1,0 +1,41 @@
+.scroll-top-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  z-index: 999;
+}
+
+.scroll-top-btn.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.scroll-top-btn:active {
+  transform: translateY(-2px) scale(0.95);
+}
+
+/* 🚫 Desktop hidden */
+/*
+@media (min-width: 768px) {
+  .scroll-top-btn {
+    display: none;
+  }
+}
+*/

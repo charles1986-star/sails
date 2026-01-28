@@ -1,0 +1,48 @@
+const games = [
+  {
+    id: 1,
+    title: "Galactic Conquest",
+    price: "$4.99",
+    category: "Strategy",
+    image: "/images/game-1.jpg",
+    company: "StarForge Studios",
+    contact: "support@starforge.example",
+    description: "A deep turn-based strategy set in a sprawling galaxy. Build, trade and conquer.",
+    players: 12,
+  },
+  {
+    id: 2,
+    title: "Pixel Rally",
+    price: "$2.49",
+    category: "Racing",
+    image: "/images/game-2.jpg",
+    company: "RetroLane",
+    contact: "hello@retrolane.example",
+    description: "Fast arcade-style racing with retro pixel visuals and local multiplayer.",
+    players: 3,
+  },
+  {
+    id: 3,
+    title: "Mystic Puzzles",
+    price: "Free",
+    category: "Puzzle",
+    image: "/images/game-3.jpg",
+    company: "BrainGym",
+    contact: "games@braingym.example",
+    description: "Relaxing but challenging puzzles with daily updates and leaderboards.",
+    players: 1,
+  },
+  {
+    id: 4,
+    title: "Raiders of Neon",
+    price: "$6.99",
+    category: "Action",
+    image: "/images/game-4.jpg",
+    company: "NeonByte",
+    contact: "support@neonbyte.example",
+    description: "Fast-paced action shooter with cooperative online rooms.",
+    players: 24,
+  },
+];
+
+export default games;

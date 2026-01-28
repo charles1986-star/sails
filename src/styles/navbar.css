@@ -6,7 +6,7 @@
 .navbar-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 14px 20px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -14,9 +14,16 @@
 }
 
 .logo {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: #14a800;
+}
+
+
+.navbar-logo img {
+  height: 50px;       /* adjust as needed */
+  width: auto;
+  object-fit: contain;
 }
 
 .nav-links {
@@ -26,13 +33,18 @@
 
 .nav-links a {
   text-decoration: none;
-  font-size: 14px;
-  color: #001e00;
-  font-weight: 500;
+  font-size: 15px;
+  color: #0f2a12;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background-color .12s ease, color .12s ease, transform .08s;
 }
 
 .nav-links a:hover {
-  color: #14a800;
+  color: #0b5e3c;
+  background-color: rgba(11,94,60,0.06);
+  transform: translateY(-1px);
 }
 
 /* Login Button */
