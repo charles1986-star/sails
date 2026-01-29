@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState } from "react";
 import gamesData from "../data/games";
 import "../styles/games.css";
-import TicTacToe from "../components/TicTacToe";
+//import TicTacToe from "../components/TicTacToe";
 import { getWallet } from "../utils/walletUtils";
 
 export default function GameDetail() {

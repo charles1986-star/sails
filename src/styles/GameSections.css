@@ -1,0 +1,60 @@
+.landing-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 8%;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.landing-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+.section-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: center;
+  width: 100%;
+}
+
+.section-image img {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.section-text {
+  flex: 1;
+}
+
+.section-text h2 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  color: #0a2540;
+}
+
+.section-text p {
+  font-size: 1.1rem;
+  color: #334155;
+}
+
+/* Reverse layout for even sections if you want alternating */
+.games-intro .section-content {
+  flex-direction: row; /* image left, text right */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .landing-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .section-image img {
+    max-width: 100%;
+  }
+}

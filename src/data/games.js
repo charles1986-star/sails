@@ -43,6 +43,17 @@ const games = [
     description: "Fast-paced action shooter with cooperative online rooms.",
     players: 24,
   },
+  {
+    id: 5,
+    title: "Tic Tac Toe",
+    price: "Free",
+    category: "Classic",
+    image: "/images/tictactoe.svg",
+    company: "Sail Games",
+    contact: "games@sail.example",
+    description: "Classic Tic Tac Toe with online rooms. Create or join a room and challenge other players.",
+    players: 2,
+  },
 ];
 
 export default games;

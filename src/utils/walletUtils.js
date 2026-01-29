@@ -16,6 +16,8 @@ export function initializeWallet() {
 
   const newWallet = {
     userId: DEFAULT_USER_ID,
+    userName: "User",
+    avatar: "default",
     balance: 0,
     transactions: [],
     createdAt: new Date().toISOString(),
@@ -158,12 +160,48 @@ export function getPurchaseTransactions() {
 export function resetWallet() {
   const newWallet = {
     userId: DEFAULT_USER_ID,
+    userName: "User",
+    avatar: "default",
     balance: 0,
     transactions: [],
     createdAt: new Date().toISOString(),
   };
   localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(newWallet));
   return newWallet;
+}
+
+/**
+ * Update user avatar
+ * @param {string} avatarName - avatar preset name (default, blue, purple, red, orange, green, pink, teal)
+ */
+export function updateAvatar(avatarName) {
+  const wallet = getWallet();
+  wallet.avatar = avatarName || "default";
+  saveWallet(wallet);
+  return wallet;
+}
+
+/**
+ * Update user name
+ * @param {string} name - new user name
+ */
+export function updateUserName(name) {
+  const wallet = getWallet();
+  wallet.userName = name || "User";
+  saveWallet(wallet);
+  return wallet;
+}
+
+/**
+ * Update user profile (avatar and name)
+ * @param {Object} profile - { userName: string, avatar: string }
+ */
+export function updateUserProfile(profile) {
+  const wallet = getWallet();
+  if (profile.userName) wallet.userName = profile.userName;
+  if (profile.avatar) wallet.avatar = profile.avatar;
+  saveWallet(wallet);
+  return wallet;
 }
 
 export default {
@@ -176,4 +214,7 @@ export default {
   getContentTransactions,
   getPurchaseTransactions,
   resetWallet,
+  updateAvatar,
+  updateUserName,
+  updateUserProfile,
 };

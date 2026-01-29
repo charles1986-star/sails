@@ -20,11 +20,13 @@ export default function Games() {
   const pageItems = filtered.slice(start, start + PAGE_SIZE);
 
   const handleCreate = (game) => {
-    alert(`Room created for ${game.title} (demo).`);
+    // navigate to game detail room list for room creation
+    window.location.href = `/games/${game.id}`;
   };
 
   const handleJoin = (game) => {
-    alert(`Joining room for ${game.title} (demo).`);
+    // navigate to game detail to join existing rooms
+    window.location.href = `/games/${game.id}`;
   };
 
   return (
