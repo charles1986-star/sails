@@ -1,92 +1,56 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import "../styles/sidebar.css";
+import products from "../data/products";
 
-// Sample tree categories
-const categories = [
-  {
-    name: "Development & IT",
-    icon: "💻",
-    children: [
-      { name: "Web Development" },
-      { name: "Mobile Development" },
-      { name: "Data Science" },
-    ],
-  },
-  {
-    name: "Design & Creative",
-    icon: "🎨",
-    children: [
-      { name: "Logo Design" },
-      { name: "UI/UX Design" },
-      { name: "Graphic Design" },
-    ],
-  },
-  {
-    name: "Writing & Translation",
-    icon: "✍️",
-    children: [
-      { name: "Content Writing" },
-      { name: "Translation" },
-    ],
-  },
-  {
-    name: "Marketing",
-    icon: "📈",
-    children: [
-      { name: "SEO" },
-      { name: "Social Media" },
-      { name: "Email Marketing" },
-    ],
-  },
-];
+// derive categories from products
+function buildCategoryTree(items) {
+  const map = {};
+  items.forEach((p) => {
+    if (!map[p.category]) map[p.category] = { name: p.category, children: [] };
+    // we don't have deeper taxonomy in demo; keep category only
+  });
+  return Object.values(map);
+}
 
-export default function Sidebar({ onCategorySelect }) {
+export default function Sidebar({ onCategorySelect, onSearch, onSort, selectedCategory, onClearFilters }) {
   const [open, setOpen] = useState(true);
-  const [expanded, setExpanded] = useState({});
+  const [query, setQuery] = useState("");
+  const categories = useMemo(() => buildCategoryTree(products), []);
 
-  const toggleExpand = (name) => {
-    setExpanded({ ...expanded, [name]: !expanded[name] });
-  };
+  function handleSearch(e) {
+    const v = e.target.value;
+    setQuery(v);
+    onSearch && onSearch(v);
+  }
 
   return (
     <div className={`sidebar ${open ? "open" : "closed"}`}>
-      <button className="toggle-btn" onClick={() => setOpen(!open)}>
-        {open ? "⏪" : "⏩"}
-      </button>
+      <div className="sidebar-top">
+        <button className="toggle-btn" onClick={() => setOpen(!open)}>
+          {open ? "⏪" : "⏩"}
+        </button>
+        <input className="category-search" placeholder="Search services" value={query} onChange={handleSearch} />
+      </div>
 
       {open && (
-        <ul className="category-list">
-          {categories.map((c) => (
-            <li key={c.name}>
-              <div
-                className="category-item"
-                onClick={() => toggleExpand(c.name)}
-              >
-                <span className="cat-icon">{c.icon}</span>
-                {c.name}
-                {c.children && (
-                  <span className="expand-icon">
-                    {expanded[c.name] ? "▼" : "▶"}
-                  </span>
-                )}
-              </div>
+        <div className="category-block">
+          <div className="chips">
+            <button className={`chip ${!selectedCategory ? 'active' : ''}`} onClick={() => onCategorySelect && onCategorySelect(null)}>All</button>
+            {categories.map((c) => (
+              <button key={c.name} className={`chip ${selectedCategory === c.name ? 'active' : ''}`} onClick={() => onCategorySelect && onCategorySelect(c.name)}>{c.name}</button>
+            ))}
+          </div>
 
-              {c.children && expanded[c.name] && (
-                <ul className="subcategory-list">
-                  {c.children.map((sub) => (
-                    <li
-                      key={sub.name}
-                      className="subcategory-item"
-                      onClick={() => onCategorySelect && onCategorySelect(sub.name)}
-                    >
-                      {sub.name}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
+          <div className="sort-row">
+            <label>Sort:</label>
+            <select onChange={(e) => onSort && onSort(e.target.value)}>
+              <option value="popular">Popular</option>
+              <option value="price_asc">Price: Low → High</option>
+              <option value="price_desc">Price: High → Low</option>
+            </select>
+            <button className="clear-filters" onClick={() => onClearFilters && onClearFilters()}>Clear</button>
+          </div>
+        </div>
       )}
     </div>
   );

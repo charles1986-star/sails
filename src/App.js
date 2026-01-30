@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
+import ProductDetail from "./pages/ProductDetail";
 import Games from "./pages/Games";
 import GameDetail from "./pages/GameDetail";
 import Footer from "./components/Footer";
@@ -15,6 +16,7 @@ import NewArticle from "./pages/NewArticle";
 import Articles from "./pages/Articles";
 import Library from "./pages/Library";
 import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 import Notice from "./components/Notice";
 import ShipSearch from "./pages/ShipSearch";
 import ShipDetail from "./pages/ShipDetail";
@@ -28,6 +30,7 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cart, setCart] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
   const [notice, setNotice] = useState(null);
   const [showScorePurchase, setShowScorePurchase] = useState(false);
 
@@ -45,14 +48,23 @@ function App() {
     setSelectedProduct(null);
   };
 
-  function handleLoginToggle() {
-    if (!loggedIn) {
-      setLoggedIn(true);
-      setNotice("Welcome back — you are now signed in");
-    } else {
-      setLoggedIn(false);
-      setNotice("You have been signed out");
-    }
+  useEffect(() => {
+    // load current user from localStorage (auth util)
+    try {
+      const u = localStorage.getItem('sails_current_user');
+      if (u) setUser(JSON.parse(u));
+    } catch (e) {}
+  }, []);
+
+  function handleLoginClick() {
+    // route to login page
+    window.location.href = '/signup';
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('sails_current_user');
+    setUser(null);
+    setNotice('You have been signed out');
   }
 
   const handlePurchaseSuccess = (message) => {
@@ -65,14 +77,16 @@ function App() {
     <BrowserRouter>
       <Navbar
         cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-        loggedIn={loggedIn}
-        onLoginToggle={handleLoginToggle}
+        user={user}
+        onLoginClick={handleLoginClick}
+        onLogout={handleLogout}
         onScoreClick={() => setShowScorePurchase(true)}
       />
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/shop" element={<Shop onBuyNow={setSelectedProduct} />} />
+        <Route path="/shop" element={<Shop onBuyNow={setSelectedProduct} onAddToCart={addToCart} />} />
+        <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} onBuyNow={setSelectedProduct} />} />
         <Route path="/games" element={<Games />} />
         <Route path="/games/:id" element={<GameDetail />} />
         <Route path="/cart" element={loggedIn ? <CartPage cart={cart} setCart={setCart} /> : <Navigate to="/" />} />
@@ -86,6 +100,7 @@ function App() {
         <Route path="/articles/:id" element={<ArticleView />} />
         <Route path="/library" element={<Library />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/my-account" element={<MyAccount />} />
       </Routes>
 

@@ -1,5 +1,7 @@
 import React from "react";
 import "../styles/shipsearch.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function ShipFilterPanel({ filters, onChange, ports, types, onClear }) {
   const toggleType = (t) => {
@@ -56,7 +58,25 @@ export default function ShipFilterPanel({ filters, onChange, ports, types, onCle
       </div>
 
       <label>Available After</label>
-      <input type="date" value={filters.availableAfter ?? ""} onChange={(e) => onChange({ ...filters, availableAfter: e.target.value || null })} />
+      <DatePicker
+        selected={
+          filters.availableAfter
+            ? new Date(filters.availableAfter)
+            : null
+        }
+        onChange={(date) =>
+          onChange({
+            ...filters,
+            availableAfter: date
+              ? date.toISOString().slice(0, 10) // yyyy-mm-dd
+              : null,
+          })
+        }
+        dateFormat="yyyy-MM-dd"
+        placeholderText="yyyy-mm-dd"
+        className="date-picker-input"
+      />
+
     </aside>
   );
 }

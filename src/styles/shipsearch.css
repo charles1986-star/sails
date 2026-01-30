@@ -6,15 +6,7 @@
   padding: 28px;
   align-items: start;
 }
-.ship-filters {
-  background: #ffffff;
-  border: 1px solid #e6eef8;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(13, 38, 59, 0.04);
-  position: sticky;
-  top: 20px;
-}
+
 .filters-header { display:flex; justify-content:space-between; align-items:center; }
 .filters-header h3 { margin:0; font-size:1.05rem; }
 .clear-btn { background:transparent; border:none; color:#0b74de; cursor:pointer; font-weight:600; }
@@ -44,7 +36,26 @@
 .title-row { display:flex; gap:8px; align-items:center; }
 .title-row h4 { margin:0; font-size:1.05rem; }
 .imo { font-size:0.82rem; color:#64748b; margin-top:4px; }
-.badge { background:#f1f5f9; color:#0b74de; padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:600; }
+.badge {
+  flex-shrink: 0;               /* do not shrink */
+  display: inline-block;
+  max-width: 120px;             /* prevents overflowing text */
+  white-space: nowrap;           /* keep text in single line */
+  overflow: hidden;
+  text-overflow: ellipsis;      /* show ... if too long */
+  background: #1ca9c9;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.badge-cargo { background: #1ca9c9; }
+.badge-passenger { background: #f39c12; }
+.badge-tanker { background: #e74c3c; }
+
 .ship-route { color:#0f1724; margin-top:6px; font-weight:600; }
 .ship-meta { color:#64748b; margin-top:6px; }
 .ship-sub { color:#475569; margin-top:6px; font-size:0.9rem; }
@@ -121,3 +132,286 @@
   .detail-grid { grid-template-columns: 1fr; }
   .sticky-card { position:relative; top:0; }
 }
+
+
+* ===== Filter Panel Container ===== */
+.ship-filters {
+  width: 300px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(11, 60, 93, 0.08);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #0B3C5D;
+}
+
+/* ===== Header ===== */
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filters-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.clear-btn {
+  background: transparent;
+  border: none;
+  color: #1CA9C9;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  text-decoration: underline;
+}
+
+/* ===== Labels ===== */
+.ship-filters label {
+  display: block;
+  margin-top: 16px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0B3C5D;
+}
+
+/* ===== Inputs & Selects ===== */
+.ship-filters input,
+.ship-filters select {
+  width: 80%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #dce3ea;
+  background: #F5F7FA;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.ship-filters input:focus,
+.ship-filters select:focus {
+  outline: none;
+  border-color: #1CA9C9;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(28, 169, 201, 0.15);
+}
+
+/* ===== Two-column Row ===== */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ===== Ship Types ===== */
+.types-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* Hide checkbox */
+.type-chip input {
+  display: none;
+}
+
+/* Chip Style */
+.type-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #F5F7FA;
+  border: 1px solid #dce3ea;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Hover */
+.type-chip:hover {
+  border-color: #1CA9C9;
+  color: #1CA9C9;
+}
+
+/* Active Chip */
+.type-chip.active {
+  background: #1CA9C9;
+  color: #ffffff;
+  border-color: #1CA9C9;
+  box-shadow: 0 6px 16px rgba(28, 169, 201, 0.35);
+}
+
+/* ===== Date Input ===== */
+.ship-filters input[type="date"] {
+  font-size: 13px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .ship-filters {
+    width: 100%;
+  }
+}
+
+.ship-card {
+  display: flex;
+  gap: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.ship-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.ship-image {
+  flex: 0 0 200px;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 12px 0 0 12px;
+}
+
+.ship-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ship-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0;
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-row h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #0b3c5d;
+}
+
+
+
+.ship-route, .ship-meta, .ship-capacity {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: #e0f2f7;
+  color: #0b3c5d;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+.ship-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 6px;
+  padding-left: 12px;
+}
+
+.owner-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.75rem;
+}
+
+.verified {
+  color: green;
+  margin-right: 4px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+
+.view-btn, .apply-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-btn {
+  background: transparent;
+  color: #0b3c5d;
+  border: 1px solid #0b3c5d;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.view-btn:hover {
+  background: #0b3c5d;
+  color: white;
+  box-shadow: 0 4px 12px rgba(11,60,93,0.2);
+}
+
+.apply-btn {
+  background: #1ca9c9;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.apply-btn:hover {
+  background: #0b3c5d;
+  box-shadow: 0 4px 12px rgba(28,169,201,0.3);
+}
+
+@media (max-width: 768px) {
+  .ship-card {
+    flex-direction: column;
+  }
+  .ship-image {
+    width: 100%;
+    height: 180px;
+    border-radius: 12px 12px 0 0;
+  }
+  .ship-actions {
+    align-items: flex-start;
+  }
+}
+

@@ -8,6 +8,7 @@ import ShopLandingSection from "../components/landing/ShopLandingSection";
 import MediaLandingSection from "../components/landing/MediaLandingSection";
 import GamesIntro from "../components/landing/GamesIntro";
 import "../styles/home.css";
+import StatisticsBoard from "../components/StatisticsBoard";
 
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
     <>
       <Hero />
       <LandingSections />
+      <StatisticsBoard />
       <SailsIntro />
       <ShopLandingSection />
       <MediaLandingSection />

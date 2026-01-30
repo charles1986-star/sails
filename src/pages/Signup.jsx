@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { signupUser } from "../utils/auth";
+import { updateUserProfile } from "../utils/walletUtils";
 import "../styles/signup.css";
 
 export default function Signup() {
@@ -16,8 +18,14 @@ export default function Signup() {
       return;
     }
 
-    // Minimal client-side demo flow — in real app you'd call an API
-    alert(`Signed up ${name} (${role}) — demo only`);
+    const res = signupUser({ name, email, password });
+    if (!res.success) {
+      alert(res.message);
+      return;
+    }
+    // update demo wallet profile
+    updateUserProfile({ userName: name });
+    window.dispatchEvent(new Event('walletUpdated'));
     navigate("/");
   }
 

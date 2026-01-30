@@ -4,20 +4,20 @@ import { getWallet } from "../utils/walletUtils";
 import Avatar from "./Avatar";
 import "../styles/navbar.css";
 
-export default function Navbar({ cartCount, loggedIn, onLoginToggle, onScoreClick }) {
+export default function Navbar({ cartCount, user, onLoginClick, onLogout, onScoreClick }) {
   const [balance, setBalance] = useState(0);
   const [userName, setUserName] = useState("User");
   const [userAvatar, setUserAvatar] = useState("default");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loggedIn) {
+    if (user) {
       const wallet = getWallet();
       setBalance(wallet.balance);
-      setUserName(wallet.userName || "User");
+      setUserName(wallet.userName || user.name || "User");
       setUserAvatar(wallet.avatar || "default");
     }
-  }, [loggedIn]);
+  }, [user]);
 
   // Refresh balance when score changes
   useEffect(() => {
@@ -38,10 +38,9 @@ export default function Navbar({ cartCount, loggedIn, onLoginToggle, onScoreClic
   return (
     <header className="navbar">
       <div className="navbar-container">
-        {/* Logo updated for Sail Transport */}
         <div className="navbar-logo logo">
-          <img src="/images/logo.png" alt="Sail Transport Logo" />
-          Sail Transport
+          <img src="/images/logo.png" alt="Sail Transport" />
+          
         </div>
         <nav className="nav-links">
           <Link to="/">Home</Link>
@@ -53,7 +52,7 @@ export default function Navbar({ cartCount, loggedIn, onLoginToggle, onScoreClic
         </nav>
 
         <div className="auth-actions">
-          {loggedIn && (
+          {user && (
             <>
               <button className="score-btn" onClick={onScoreClick}>
                 <span className="score-icon">⭐</span>
@@ -71,16 +70,17 @@ export default function Navbar({ cartCount, loggedIn, onLoginToggle, onScoreClic
             </>
           )}
 
-          {!loggedIn && (
+          {!user && (
             <Link to="/signup" className="signup-btn">
               Sign Up
             </Link>
           )}
 
-          <button className="login-btn" onClick={onLoginToggle}>
-            {loggedIn ? "Logout" : "Login"}
-          </button>
-    
+          {user ? (
+            <button className="login-btn" onClick={onLogout}>Logout</button>
+          ) : (
+            <button className="login-btn" onClick={onLoginClick}>Login</button>
+          )}
         </div>
       </div>
     </header>

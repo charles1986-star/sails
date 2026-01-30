@@ -1,5 +1,6 @@
 import React from "react";
 import "../styles/shipsearch.css";
+// import defaultShipImage from "../assets/ship-default.jpg"; // <-- add a default sail image here
 
 export default function ShipCard({ ship, onView, onApply }) {
   const postedAgo = (() => {
@@ -9,27 +10,28 @@ export default function ShipCard({ ship, onView, onApply }) {
     return diff === 0 ? "Today" : `${diff}d ago`;
   })();
 
-  const initials = ship.ownerCompany.split(" ").map(w => w[0]).slice(0,2).join("");
+  //const imageSrc = ship.image || defaultShipImage; // default if no image
 
   return (
     <div className="ship-card" onClick={() => onView(ship)}>
-      <div className="ship-left">
-        <div className="avatar">{initials}</div>
+      {/* Left image */}
+      <div className="ship-image">
+        <img src="/images/your-ship-hero.jpg" alt={ship.name} loading="lazy" />
       </div>
 
+      {/* Main info */}
       <div className="ship-main">
         <div className="title-row">
-          <div>
-            <h4>{ship.name}</h4>
-            {ship.imo && <div className="imo">IMO: {ship.imo}</div>}
-          </div>
-          <span className="badge">{ship.type}</span>
+          <h3>{ship.name}</h3>
+          {ship.imo && <span className="imo">IMO: {ship.imo}</span>}
+          <span className={`badge badge-${ship.type.toLowerCase()}`}>{ship.type}</span>
         </div>
 
         <div className="ship-route">{ship.startPort} → {ship.endPort}</div>
-        <div className="ship-meta">{ship.distance.toLocaleString()} km • ETA {Math.floor(ship.etaHours / 24)}d {ship.etaHours % 24}h</div>
-
-        <div className="ship-sub">Capacity: {ship.capacityTons.toLocaleString()} t</div>
+        <div className="ship-meta">
+          {ship.distance.toLocaleString()} km • ETA {Math.floor(ship.etaHours / 24)}d {ship.etaHours % 24}h
+        </div>
+        <div className="ship-capacity">Capacity: {ship.capacityTons.toLocaleString()} t</div>
 
         {ship.tags && ship.tags.length > 0 && (
           <div className="tags">
@@ -40,19 +42,19 @@ export default function ShipCard({ ship, onView, onApply }) {
         )}
       </div>
 
+      {/* Right info / actions */}
       <div className="ship-actions">
         <div className="posted">{postedAgo}</div>
-        <div className="owner-row"> 
-          <div className="owner-info">
-            <div className="owner-name">{ship.ownerCompany}</div>
-            <div className="rating">
-              {ship.verified && <span className="verified-badge">✔</span>}
-              <span className="rating-stars">{'★'.repeat(Math.round(ship.rating || 0))}</span>
-              <span className="rating-num">{ship.rating ? ship.rating.toFixed(1) : "—"}</span>
-            </div>
-          </div>
+        <div className="owner-info">
+          <span className="owner-name">{ship.ownerCompany}</span>
+          <span className="rating">
+            {ship.verified && <span className="verified">✔</span>}
+            {'★'.repeat(Math.round(ship.rating || 0))}
+            <span className="rating-num">{ship.rating ? ship.rating.toFixed(1) : "—"}</span>
+          </span>
         </div>
-        <div className="action-row">
+
+        <div className="action-buttons">
           <button className="view-btn" onClick={(e) => { e.stopPropagation(); onView(ship); }}>View</button>
           <button className="apply-btn" onClick={(e) => { e.stopPropagation(); onApply(ship); }}>Apply</button>
         </div>

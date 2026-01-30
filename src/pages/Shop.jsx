@@ -1,82 +1,108 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import ProductCard from "../components/ProductCard";
 import Sidebar from "../components/Sidebar";
+import products from "../data/products";
 import "../styles/shop.css";
 
-const products = [
-  { id: 1, title: "Website Design", price: "$120", category: "Web Development", image: "/images/product-1.svg" },
-  { id: 2, title: "Mobile App UI", price: "$80", category: "Mobile Development", image: "/images/product-2.svg" },
-  { id: 3, title: "SEO Optimization", price: "$90", category: "SEO", image: "/images/product-3.svg" },
-  { id: 4, title: "Brand Logo Design", price: "$45", category: "Logo Design", image: "/images/product-4.svg" },
-  { id: 5, title: "Social Media Marketing", price: "$75", category: "Social Media", image: "/images/product-5.svg" },
-  { id: 6, title: "E-commerce Setup", price: "$300", category: "Web Development", image: "/images/product-6.svg" },
-  { id: 7, title: "React Frontend", price: "$220", category: "Web Development", image: "/images/product-7.svg" },
-  { id: 8, title: "iOS App Prototype", price: "$180", category: "Mobile Development", image: "/images/product-8.svg" },
-  { id: 9, title: "Content Writing Pack", price: "$60", category: "Writing & Translation", image: "/images/product-9.svg" },
-  { id: 10, title: "Logo & Brand Kit", price: "$150", category: "Design & Creative", image: "/images/product-10.svg" },
-  { id: 11, title: "Product Photography", price: "$95", category: "Design & Creative", image: "/images/product-11.svg" },
-  { id: 12, title: "Marketing Strategy Session", price: "$200", category: "Marketing", image: "/images/product-12.svg" },
-];
-
-export default function Shop({ onBuyNow }) {
+export default function Shop({ onBuyNow, onAddToCart }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("popular");
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [levelFilter, setLevelFilter] = useState(null);
 
   const PAGE_SIZE = 6;
 
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category === selectedCategory)
-    : products;
+  const filteredProducts = useMemo(() => {
+    let list = products.slice();
+    if (selectedCategory) list = list.filter((p) => p.category === selectedCategory);
+    if (search) list = list.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase()));
+    if (levelFilter) list = list.filter((p) => p.priceLevel === levelFilter);
+    list = list.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    if (sort === "price_asc") list.sort((a,b) => a.price - b.price);
+    if (sort === "price_desc") list.sort((a,b) => b.price - a.price);
+    return list;
+  }, [selectedCategory, search, sort, priceRange, levelFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const start = (page - 1) * PAGE_SIZE;
   const pagedProducts = filteredProducts.slice(start, start + PAGE_SIZE);
+
+  function handleSearch(q) { setSearch(q); setPage(1); }
+  function handleSort(s) { setSort(s); }
+  function handleClear() { setSelectedCategory(null); setSearch(""); setSort('popular'); setPriceRange([0,1000]); setLevelFilter(null); }
 
   return (
     <div className="shop-container">
       <h1 className="shop-title">Shop Services</h1>
 
       <div className="shop-main">
-        <Sidebar onCategorySelect={setSelectedCategory} />
+        <Sidebar onCategorySelect={setSelectedCategory} onSearch={handleSearch} onSort={handleSort} selectedCategory={selectedCategory} onClearFilters={handleClear} />
 
-        <div className="product-grid">
-          {pagedProducts.map((p) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              onBuyNow={() => onBuyNow(p)}
-            />
-          ))}
-        </div>
-      </div>
+        <div className="product-grid-wrap">
+          <div className="filters-row">
+            <div className="filter-item">
+              <label>Price range</label>
+              <div>
+                <input type="number" value={priceRange[0]} onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])} />
+                —
+                <input type="number" value={priceRange[1]} onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])} />
+              </div>
+            </div>
 
-      <div className="pagination-wrapper">
-        <div className="pagination shop-pagination">
-          <button
-            className="page-btn"
-            onClick={() => setPage((s) => Math.max(1, s - 1))}
-            disabled={page === 1}
-          >
-            ‹ Prev
-          </button>
+            <div className="filter-item">
+              <label>Price level</label>
+              <select value={levelFilter || ""} onChange={(e) => setLevelFilter(e.target.value || null)}>
+                <option value="">All</option>
+                <option value="Basic">Basic</option>
+                <option value="Standard">Standard</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Premium">Premium</option>
+              </select>
+            </div>
+          </div>
 
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={`page-num ${page === i + 1 ? "active" : ""}`}
-              onClick={() => setPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
+          <div className="product-grid">
+            {pagedProducts.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onBuyNow={() => onBuyNow(p)}
+                onAddToCart={onAddToCart}
+              />
+            ))}
+          </div>
 
-          <button
-            className="page-btn"
-            onClick={() => setPage((s) => Math.min(totalPages, s + 1))}
-            disabled={page === totalPages}
-          >
-            Next ›
-          </button>
+          <div className="pagination-wrapper">
+            <div className="pagination shop-pagination">
+              <button
+                className="page-btn"
+                onClick={() => setPage((s) => Math.max(1, s - 1))}
+                disabled={page === 1}
+              >
+                ‹ Prev
+              </button>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  className={`page-num ${page === i + 1 ? "active" : ""}`}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                className="page-btn"
+                onClick={() => setPage((s) => Math.min(totalPages, s + 1))}
+                disabled={page === totalPages}
+              >
+                Next ›
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

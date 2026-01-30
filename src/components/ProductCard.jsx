@@ -1,4 +1,6 @@
-export default function ProductCard({ product, onBuyNow }) {
+import { Link } from "react-router-dom";
+
+export default function ProductCard({ product, onBuyNow, onAddToCart }) {
   return (
     <div className="product-card">
       <div className="product-media">
@@ -8,12 +10,13 @@ export default function ProductCard({ product, onBuyNow }) {
 
       <div className="product-body">
         <h3 className="product-title">{product.title}</h3>
-        <p className="product-desc">A short service description or summary.</p>
+        <p className="product-desc">{product.description}</p>
         <div className="product-footer">
-          <div className="price">{product.price}</div>
+          <div className="price">{product.priceText}</div>
           <div className="actions">
-            <button className="btn-secondary" onClick={() => alert('View details')}>View</button>
-            <button className="btn-primary" onClick={onBuyNow}>Buy</button>
+            <Link to={`/product/${product.id}`} className="btn-secondary">View</Link>
+            <button className="btn-secondary" onClick={() => onAddToCart && onAddToCart(product, 1)}>Add to Cart</button>
+            <button className="btn-primary" onClick={() => onBuyNow && onBuyNow(product)}>Purchase</button>
           </div>
         </div>
       </div>
