@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import ProductCard from "../components/ProductCard";
 import Sidebar from "../components/Sidebar";
 import products from "../data/products";
@@ -10,78 +10,171 @@ export default function Shop({ onBuyNow, onAddToCart }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("popular");
   const [priceRange, setPriceRange] = useState([0, 1000]);
-  const [levelFilter, setLevelFilter] = useState(null);
+  const [levelFilter, setLevelFilter] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const PAGE_SIZE = 6;
 
-  const filteredProducts = useMemo(() => {
-    let list = products.slice();
-    if (selectedCategory) list = list.filter((p) => p.category === selectedCategory);
-    if (search) list = list.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase()));
-    if (levelFilter) list = list.filter((p) => p.priceLevel === levelFilter);
-    list = list.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
-    if (sort === "price_asc") list.sort((a,b) => a.price - b.price);
-    if (sort === "price_desc") list.sort((a,b) => b.price - a.price);
-    return list;
-  }, [selectedCategory, search, sort, priceRange, levelFilter]);
+  
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  /** -----------------------------
+   * FILTER + SORT (Upwork order)
+   * ----------------------------- */
+  const filteredProducts = useMemo(() => {
+    let list = [...products];
+
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q)
+      );
+    }
+
+    if (selectedCategory) {
+      list = list.filter((p) => p.category === selectedCategory);
+    }
+
+    if (levelFilter) {
+      list = list.filter((p) => p.priceLevel === levelFilter);
+    }
+
+    list = list.filter(
+      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+    );
+
+    if (sort === "price_asc") list.sort((a, b) => a.price - b.price);
+    if (sort === "price_desc") list.sort((a, b) => b.price - a.price);
+
+    return list;
+  }, [search, selectedCategory, levelFilter, priceRange, sort]);
+
+  /** -----------------------------
+   * Pagination safety
+   * ----------------------------- */
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredProducts.length / PAGE_SIZE)
+  );
+
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [totalPages, page]);
+
   const start = (page - 1) * PAGE_SIZE;
   const pagedProducts = filteredProducts.slice(start, start + PAGE_SIZE);
 
-  function handleSearch(q) { setSearch(q); setPage(1); }
-  function handleSort(s) { setSort(s); }
-  function handleClear() { setSelectedCategory(null); setSearch(""); setSort('popular'); setPriceRange([0,1000]); setLevelFilter(null); }
+  /** -----------------------------
+   * Handlers
+   * ----------------------------- */
+  const resetPage = () => setPage(1);
+
+  function handleSearch(q) {
+    setSearch(q);
+    resetPage();
+  }
+
+  function handleClear() {
+    setSelectedCategory(null);
+    setSearch("");
+    setSort("popular");
+    setPriceRange([0, 1000]);
+    setLevelFilter("");
+    resetPage();
+  }
 
   return (
     <div className="shop-container">
-      <h1 className="shop-title">Shop Services</h1>
+      <h1 className="shop-title">Browse Services</h1>
 
       <div className="shop-main">
-        <Sidebar onCategorySelect={setSelectedCategory} onSearch={handleSearch} onSort={handleSort} selectedCategory={selectedCategory} onClearFilters={handleClear} />
+        <Sidebar
+          onCategorySelect={(c) => {
+            setSelectedCategory(c);
+            resetPage();
+          }}
+          onSearch={handleSearch}
+          selectedCategory={selectedCategory}
+          onClearFilters={handleClear}
+        />
 
         <div className="product-grid-wrap">
-          <div className="filters-row">
-            <div className="filter-item">
-              <label>Price range</label>
-              <div>
-                <input type="number" value={priceRange[0]} onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])} />
-                —
-                <input type="number" value={priceRange[1]} onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])} />
-              </div>
+          {/* ---------- Results Header ---------- */}
+          <div className="results-header">
+            <div className="results-count">
+              {filteredProducts.length} services found
             </div>
 
+            <select
+              className="sort-select"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              <option value="popular">Most Popular</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+            </select>
+          </div>
+
+          {/* ---------- Filters Card ---------- */}
+          <div className="filters-card">
             <div className="filter-item">
-              <label>Price level</label>
-              <select value={levelFilter || ""} onChange={(e) => setLevelFilter(e.target.value || null)}>
-                <option value="">All</option>
-                <option value="Basic">Basic</option>
-                <option value="Standard">Standard</option>
-                <option value="Advanced">Advanced</option>
-                <option value="Premium">Premium</option>
-              </select>
+              <label>Price range</label>
+
+              <div className="price-range">
+                <div className="price-box">
+                  <span className="currency">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Min"
+                    value={priceRange[0]}
+                    onChange={(e) =>
+                      setPriceRange([Number(e.target.value || 0), priceRange[1]])
+                    }
+                  />
+                </div>
+
+                <span className="dash">–</span>
+
+                <div className="price-box">
+                  <span className="currency">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Max"
+                    value={priceRange[1]}
+                    onChange={(e) =>
+                      setPriceRange([priceRange[0], Number(e.target.value || 0)])
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* ---------- Products ---------- */}
           <div className="product-grid">
-            {pagedProducts.map((p) => (
+            {products.map((p) => (
               <ProductCard
                 key={p.id}
                 product={p}
-                onBuyNow={() => onBuyNow(p)}
-                onAddToCart={onAddToCart}
+                onView={(item) => setSelectedProduct(item)}
               />
             ))}
           </div>
 
-          <div className="pagination-wrapper">
-            <div className="pagination shop-pagination">
+          {/* ---------- Pagination ---------- */}
+          <div className="pagination-wrap">
+            <div className="pagination upwork-pagination">
               <button
-                className="page-btn"
-                onClick={() => setPage((s) => Math.max(1, s - 1))}
+                className="page-arrow"
                 disabled={page === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                aria-label="Previous page"
               >
-                ‹ Prev
+                ‹
               </button>
 
               {Array.from({ length: totalPages }).map((_, i) => (
@@ -95,11 +188,12 @@ export default function Shop({ onBuyNow, onAddToCart }) {
               ))}
 
               <button
-                className="page-btn"
-                onClick={() => setPage((s) => Math.min(totalPages, s + 1))}
+                className="page-arrow"
                 disabled={page === totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                aria-label="Next page"
               >
-                Next ›
+                ›
               </button>
             </div>
           </div>

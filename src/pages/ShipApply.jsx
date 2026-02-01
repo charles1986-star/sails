@@ -42,7 +42,6 @@ export default function ShipApply() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // minimal validation
     if (!form.cargoType || !form.weight || !form.contactName || !form.contactEmail) {
       alert("Please fill required fields: cargo type, weight, name, email.");
       return;
@@ -51,14 +50,10 @@ export default function ShipApply() {
     setSubmitting(true);
     const apps = JSON.parse(localStorage.getItem("applications") || "[]");
     if (editId) {
-      // update existing
       const next = apps.map(a => a.id === editId ? { ...a, form, createdAt: a.createdAt } : a);
       localStorage.setItem("applications", JSON.stringify(next));
       const updated = next.find(a=>a.id===editId);
-      setTimeout(()=>{
-        setSubmitting(false);
-        setSubmitted(updated);
-      }, 400);
+      setTimeout(()=>{ setSubmitting(false); setSubmitted(updated); }, 400);
     } else {
       const app = {
         id: `app_${Date.now()}`,
@@ -70,10 +65,7 @@ export default function ShipApply() {
       };
       apps.unshift(app);
       localStorage.setItem("applications", JSON.stringify(apps));
-      setTimeout(() => {
-        setSubmitting(false);
-        setSubmitted(app);
-      }, 600);
+      setTimeout(() => { setSubmitting(false); setSubmitted(app); }, 600);
     }
   };
 
@@ -81,7 +73,7 @@ export default function ShipApply() {
     <div className="apply-page">
       <div className="container detail-grid">
         <div className="detail-left">
-          <div className="detail-card">
+          <div className="detail-card card-shadow">
             <div className="detail-header">
               <div>
                 <h1>Apply to {ship.name}</h1>
@@ -95,6 +87,7 @@ export default function ShipApply() {
 
             {!submitted ? (
               <form className="apply-form" onSubmit={handleSubmit}>
+                {/* Cargo Details */}
                 <section className="card-section">
                   <h3>Cargo Details</h3>
                   <label>Type *</label>
@@ -107,11 +100,11 @@ export default function ShipApply() {
                   </select>
 
                   <div className="row">
-                    <div>
+                    <div className="half-input">
                       <label>Weight / Volume *</label>
                       <input type="number" value={form.weight} onChange={handleChange("weight")} placeholder="e.g. 12000" />
                     </div>
-                    <div>
+                    <div className="half-input">
                       <label>Unit</label>
                       <select value={form.weightUnit} onChange={handleChange("weightUnit")}>
                         <option value="t">t (tons)</option>
@@ -122,27 +115,30 @@ export default function ShipApply() {
                   </div>
 
                   <div className="row">
-                    <div>
+                    <div className="half-input">
                       <label>Preferred Loading Date</label>
                       <input type="date" value={form.preferredLoadingDate} onChange={handleChange("preferredLoadingDate")} />
                     </div>
-                    <div>
+                    <div className="half-input">
                       <label>Preferred Arrival Date</label>
                       <input type="date" value={form.preferredArrivalDate} onChange={handleChange("preferredArrivalDate")} />
                     </div>
                   </div>
                 </section>
 
+                {/* Cover Message */}
                 <section className="card-section">
                   <h3>Cover Message</h3>
-                  <textarea value={form.message} onChange={handleChange("message")} placeholder="Write a brief message about your cargo and requirements" />
+                  <textarea value={form.message} onChange={handleChange("message")} placeholder="Briefly explain your cargo and requirements" />
                 </section>
 
+                {/* Attachments */}
                 <section className="card-section">
                   <h3>Attachments</h3>
                   <input type="file" />
                 </section>
 
+                {/* Contact Information */}
                 <section className="card-section">
                   <h3>Contact Information</h3>
                   <label>Name *</label>
@@ -153,26 +149,28 @@ export default function ShipApply() {
                   <input value={form.contactPhone} onChange={handleChange("contactPhone")} />
                 </section>
 
+                {/* Form Actions */}
                 <div className="form-actions">
-                  <button type="button" className="view-btn" onClick={() => navigate(`/ships/${ship.id}`)}>Back to ship</button>
-                  <button type="submit" className="apply-btn full" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Application'}</button>
+                  <button type="button" className="view-btn fixed-width" onClick={() => navigate(`/ships/${ship.id}`)}>Back to ship</button>
+                  <button type="submit" className="apply-btn fixed-width" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Application'}</button>
                 </div>
               </form>
             ) : (
               <div className="submitted-card">
                 <h3>Application Submitted</h3>
-                <p>Your application <strong>{submitted.id}</strong> was submitted and is now <strong>{submitted.status}</strong>.</p>
-                <p>We sent a confirmation to <strong>{submitted.form.contactEmail}</strong>. You can view all applications in your dashboard.</p>
+                <p>Your application <strong>{submitted.id}</strong> is now <strong>{submitted.status}</strong>.</p>
+                <p>We sent a confirmation to <strong>{submitted.form.contactEmail}</strong>.</p>
                 <div className="form-actions">
-                  <button className="view-btn" onClick={() => navigate(`/ships/${ship.id}`)}>Back to ship</button>
+                  <button className="view-btn fixed-width" onClick={() => navigate(`/ships/${ship.id}`)}>Back to ship</button>
                 </div>
               </div>
             )}
           </div>
         </div>
 
+        {/* Sticky right sidebar */}
         <aside className="detail-right">
-          <div className="sticky-card">
+          <div className="sticky-card card-shadow">
             <div className="owner">
               <div className="avatar-small">{ship.ownerCompany.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
               <div>

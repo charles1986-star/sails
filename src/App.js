@@ -26,6 +26,7 @@ import MyAccount from "./pages/MyAccount";
 import SailsIntro from "./components/landing/SailsIntro";
 import ScrollToTop from "./components/ScrollToTop";
 
+
 function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cart, setCart] = useState([]);
@@ -102,6 +103,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/my-account" element={<MyAccount />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
 
       {selectedProduct && (

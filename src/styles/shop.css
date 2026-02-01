@@ -1,136 +1,205 @@
+.shop-container {
+
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.shop-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
 .shop-main {
-  display: grid;
-  grid-template-columns: 260px 1fr;
+  display: flex;
   gap: 24px;
 }
 
-.shop-container { padding: 28px; }
-.shop-title { font-size: 22px; margin-bottom: 12px; }
-
-/* Product grid flex-grow */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
+.product-grid-wrap {
   flex: 1;
 }
 
-.product-grid-wrap { display: flex; flex-direction: column; gap: 18px }
-
-.filters-row { display:flex; gap:20px; align-items:flex-end; margin-bottom:12px }
-.filter-item label { display:block; font-weight:600; color:#334155; margin-bottom:6px }
-.filter-item input[type="number"] { width:90px; padding:8px; border-radius:6px; border:1px solid #e5e7eb }
-.filter-item select { padding:8px; border-radius:6px; border:1px solid #e5e7eb }
-
-/* Product card */
-.product-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #eef4ea;
-  overflow: hidden;
+/* ---------------- Results Header ---------------- */
+.results-header {
   display: flex;
-  flex-direction: column;
-  transition: transform .12s ease, box-shadow .12s ease;
-}
-.product-card:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(16,138,0,0.06); }
-
-.product-media { position: relative; height: 140px; background: linear-gradient(180deg,#fbfff8,#f7fff7); display:flex; align-items:center; justify-content:center; }
-.product-image img { width: 100%; height: 100%; object-fit: cover; }
-.product-image .placeholder { font-size: 42px; }
-.product-badge { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.9); padding:6px 8px; border-radius: 999px; font-size:12px; border: 1px solid #eaf5ea; }
-
-.product-body { padding: 14px; display:flex; flex-direction:column; gap:10px; flex:1; }
-.product-title { font-size: 16px; margin:0; }
-.product-desc { color:#5b6a57; font-size: 13px; margin:0; }
-.product-footer { display:flex; align-items:center; justify-content:space-between; margin-top:auto; gap:8px; }
-.price { font-weight:700; color: #0b5a00; }
-.actions { display:flex; gap:8px; }
-
-.btn-secondary { background: #fff; border: 1px solid #e6efe6; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-.btn-primary { background: var(--green); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-
-/* Categories bar */
-.shop-categories { padding: 18px 0 6px 0; }
-.cat-inner { display: flex; align-items: center; }
-.cat-row { display: flex; gap: 14px; align-items: flex-start; overflow-x: auto; padding-bottom: 10px; }
-.cat-card { display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:10px; border:1px solid #eef4ea; background:#fff; min-width:260px; }
-.cat-icon { font-size:28px; width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(180deg,#f7fff7,#f0fff0); }
-.cat-info { display:flex; flex-direction:column; }
-.cat-name { font-weight:700; font-size:14px; }
-.cat-sub { color:#6b7a67; font-size:13px; }
-.cat-actions { margin-left:auto; }
-.cat-chip { background:#f3f8f3; border:1px solid #e6efe6; padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600; }
-.cat-chip.small { padding:6px 10px; font-size:13px; }
-.cat-chip.active { background:var(--green); color:#fff; border-color:var(--green); }
-.cat-subchips { display:flex; gap:8px; padding:8px 0 0 6px; }
-
-@media (max-width: 900px) {
-  .product-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 900px) {
-  .shop-main {
-    flex-direction: column;
-  }
-
-  .product-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Ensure pagination sits below products and aligned with product grid (not under sidebar) */
-.pagination-wrapper {
-  margin-top: 18px;
-  margin-left: 260px; /* align with product area (sidebar width + gap) */
-  width: calc(100% - 260px);
-  display: flex;
-  justify-content: center;
-}
-
-@media (max-width: 900px) {
-  .pagination-wrapper { margin-left: 0; width: 100%; }
-}
-
-/* Pagination styles (Upwork-like) */
-.shop-pagination {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
+  margin-bottom: 16px;
 }
-.shop-pagination .page-btn,
-.shop-pagination .page-num {
+
+.results-count {
+  font-size: 14px;
+  color: #5e6d55;
+}
+
+.sort-select {
   padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #e6efe6;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+  font-size: 14px;
+}
+
+/* ---------------- Filters Card ---------------- */
+/* -------- Filters card -------- */
+
+.filters-card {
   background: #fff;
+  border: 1px solid #e4e4e4;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* -------- Filter item -------- */
+
+.filter-item {
+  margin-bottom: 16px;
+}
+
+.filter-item label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+/* -------- Price range (Upwork style) -------- */
+
+.price-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.price-box {
+  display: flex;
+  align-items: center;
+  width: 110px;
+  padding: 6px 8px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.price-box:focus-within {
+  border-color: #14a800;
+  box-shadow: 0 0 0 2px rgba(20, 168, 0, 0.15);
+}
+
+.price-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.price-box input::placeholder {
+  color: #9aaa97;
+}
+
+.currency {
+  font-size: 13px;
+  color: #6f6f6f;
+  margin-right: 4px;
+}
+
+.dash {
+  color: #777;
+  font-size: 16px;
+}
+
+/* -------- Select (Experience level) -------- */
+
+.filter-item select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  font-size: 14px;
+  background: #fff;
+}
+
+.filter-item select:focus {
+  outline: none;
+  border-color: #14a800;
+  box-shadow: 0 0 0 2px rgba(20, 168, 0, 0.15);
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-inputs input {
+  width: 90px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+}
+
+/* ---------------- Product Grid ---------------- */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* ---------- Pagination (Upwork style) ---------- */
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0 12px;
+}
+
+.upwork-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.upwork-pagination button {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 999px;
   cursor: pointer;
-  color: #234a1a;
-}
-.shop-pagination .page-num.active {
-  background: var(--green);
-  color: white;
-  border-color: var(--green);
-  font-weight: 700;
-}
-.shop-pagination .page-btn[disabled] { opacity: 0.5; cursor: default; }
-
-@media (max-width: 560px) {
-  .shop-pagination { gap: 6px; }
-  .shop-pagination .page-num { padding: 6px 8px; }
-}
-@media (max-width: 560px) {
-  .cat-row { gap:8px; }
-  .cat-card { min-width:200px; }
+  transition: all 0.2s ease;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .shop-main {
-    flex-direction: column;
-  }
+/* arrows */
+.upwork-pagination .page-arrow {
+  font-size: 18px;
+  line-height: 1;
+}
 
-  .product-grid {
-    grid-template-columns: 1fr;
-  }
+/* hover */
+.upwork-pagination button:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #111;
+}
+
+/* active page */
+.upwork-pagination .page-num.active {
+  background: #14a800;   /* Upwork green */
+  color: #fff;
+  font-weight: 600;
+}
+
+/* disabled */
+.upwork-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

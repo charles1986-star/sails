@@ -1,25 +1,44 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/product-card.css";
 
-export default function ProductCard({ product, onBuyNow, onAddToCart }) {
+export default function ProductCard({ product, onView }) {
+  const navigate = useNavigate();
   return (
-    <div className="product-card">
-      <div className="product-media">
-        <div className="product-image">{product.image ? <img src={product.image} alt={product.title} /> : <div className="placeholder">🛠</div>}</div>
-        <div className="product-badge">{product.category}</div>
+    <div className="product-card" onClick={() => onView(product)}>
+      
+      {/* Image */}
+      <div className="product-image">
+        <img
+          src={product.image || "/placeholder-ship.png"}
+          alt={product.title}
+          loading="lazy"
+        />
       </div>
 
-      <div className="product-body">
-        <h3 className="product-title">{product.title}</h3>
-        <p className="product-desc">{product.description}</p>
-        <div className="product-footer">
-          <div className="price">{product.priceText}</div>
-          <div className="actions">
-            <Link to={`/product/${product.id}`} className="btn-secondary">View</Link>
-            <button className="btn-secondary" onClick={() => onAddToCart && onAddToCart(product, 1)}>Add to Cart</button>
-            <button className="btn-primary" onClick={() => onBuyNow && onBuyNow(product)}>Purchase</button>
-          </div>
-        </div>
+      {/* Content */}
+      <div className="product-content">
+        <h4>{product.title}</h4>
+
+        <p className="meta">
+          {product.origin} → {product.destination}
+        </p>
+
+        <p className="capacity">
+          Capacity: <strong>{product.capacity} t</strong>
+        </p>
       </div>
+
+      {/* Hover Action */}
+      <button
+        className="view-btn"
+        onClick={(e) => {
+          e.stopPropagation(); // prevent card click
+          navigate(`/product/${product.id}`);
+        }}
+      >
+        View Details
+      </button>
     </div>
   );
 }
