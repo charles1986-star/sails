@@ -11,48 +11,50 @@ const defaultCategories = [
   "Multiplayer",
 ];
 
-export default function GameSidebar({ onSelect }) {
+export default function GameSidebar({ onSelect, selected }) {
   const [query, setQuery] = useState("");
-  const [active, setActive] = useState("All");
 
-  const filtered = useMemo(() => {
+  const filteredCategories = useMemo(() => {
     if (!query) return defaultCategories;
-    return defaultCategories.filter((c) => c.toLowerCase().includes(query.toLowerCase()));
+    return defaultCategories.filter((c) =>
+      c.toLowerCase().includes(query.toLowerCase())
+    );
   }, [query]);
 
-  function pick(cat) {
-    setActive(cat);
-    onSelect && onSelect(cat === "All" ? null : cat);
-  }
+  const handleSelect = (cat) => {
+    onSelect?.(cat === "All" ? null : cat);
+  };
 
   return (
     <aside className="game-sidebar">
-      <div className="sidebar-inner">
+      <div className="sidebar-card">
+        <h3 className="sidebar-title">Categories</h3>
+
         <input
-          className="cat-search"
+          type="text"
+          className="sidebar-search"
           placeholder="Search categories"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
 
-        <div className="chips">
-          {filtered.map((c) => (
-            <button
-              key={c}
-              className={`chip ${active === c ? "active" : ""}`}
-              onClick={() => pick(c)}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        <ul className="category-list">
+          {filteredCategories.map((cat) => {
+            const isActive =
+              (cat === "All" && !selected) || selected === cat;
 
-        <div className="filters">
-          <div className="filter-head">Sort</div>
-          <button className="small-chip">Popular</button>
-          <button className="small-chip">Newest</button>
-          <button className="small-chip">Most Players</button>
-        </div>
+            return (
+              <li key={cat}>
+                <button
+                  className={`category-item ${isActive ? "active" : ""}`}
+                  onClick={() => handleSelect(cat)}
+                >
+                  <span className="category-name">{cat}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </aside>
   );

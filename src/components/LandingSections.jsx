@@ -49,18 +49,7 @@ export default function LandingSections() {
           <p className="lead">Find transactions, parts, media, guides and exchange opportunities — all in one place.</p>
         </div>
 
-        <div className="tiles-grid">
-          {tiles.map((t) => (
-            <Link to={t.to} className="tile-card" key={t.id}>
-              <img src={`/images/${t.id}.svg`} alt={t.title} className="tile-image" />
-              <div className="tile-body">
-                <h3>{t.title}</h3>
-                <p>{t.desc}</p>
-              </div>
-              <div className="tile-cta">Explore →</div>
-            </Link>
-          ))}
-        </div>
+        
       </div>
     </section>
   );

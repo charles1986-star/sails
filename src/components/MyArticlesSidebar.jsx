@@ -1,25 +1,23 @@
-const filters = [
-  { key: "waiting", label: "Waiting Articles" },
-  { key: "accepted", label: "Accepted Articles" },
-  { key: "denied", label: "Denied Articles" },
-  { key: "recommended", label: "Recommended Articles" },
-  { key: "favourite", label: "Favourite Articles" },
-  { key: "draft", label: "Drafts" },
-];
+import articleCategories from "../data/articleCategories";
+import ArticleCategoryTree from "../components/ArticleCategoryTree";
 
-export default function MyArticlesSidebar({ active, onSelect }) {
+export default function MyArticlesSidebar({ selectedCategory, onSelect }) {
   return (
-    <aside className="left-sidebar">
-      <h3>My Articles</h3>
-      {filters.map((f) => (
-        <button
-          key={f.key}
-          className={active === f.key ? "active" : ""}
-          onClick={() => onSelect(f.key)}
-        >
-          {f.label}
-        </button>
-      ))}
+    <aside className="articles-sidebar">
+      <h3 className="sidebar-title">Categories</h3>
+
+      <button
+        className={`sidebar-item ${!selectedCategory ? "active" : ""}`}
+        onClick={() => onSelect(null)}
+      >
+        All Articles
+      </button>
+
+      <ArticleCategoryTree 
+        categories={articleCategories} 
+        selected={selectedCategory}
+        onSelect={onSelect}
+      />
     </aside>
   );
 }

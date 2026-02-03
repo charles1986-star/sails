@@ -53,7 +53,7 @@ export default function ShipSearch() {
 
   return (
     <div className="ship-search-page">
-      <div className="container">
+      <div className="shipssearch-container container">
         <ShipFilterPanel filters={filters} onChange={setFilters} ports={ports} types={typesList} onClear={() => clearFilter("all")} />
 
         <main className="ship-feed">

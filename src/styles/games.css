@@ -1,28 +1,291 @@
-/* Sidebar for games */
-.game-sidebar { width: 260px; }
-.sidebar-inner { background: #fff; border: 1px solid #eef4ea; padding: 12px; border-radius: 10px; }
-.cat-search { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #e7efe7; margin-bottom: 10px; }
-.chips { display:flex; flex-direction:column; gap:8px; }
-.chip { text-align:left; padding: 8px 10px; border-radius: 8px; border: 1px solid #eef6ee; background:#f9fffa; cursor:pointer; font-weight:600; }
-.chip.active { background: var(--green); color: #fff; border-color: var(--green); }
-.filters { margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-.small-chip { padding:6px 8px; border-radius:6px; border:1px solid #e6efe6; background:#fff; cursor:pointer; }
-
-/* Slight game-card tweaks on top of product card */
-.game-card .meta-row { display:flex; justify-content:space-between; gap:12px; align-items:center; }
-.game-card .company { font-size: 13px; color:#2b3b2b; font-weight:600; }
-.game-card .contact { font-size:12px; color:#567a56; }
-.game-card .players { font-size:13px; color:#0b5e3c; font-weight:700; }
-.game-detail { padding: 28px; }
-.detail-header { display:flex; gap:20px; align-items:flex-start; }
-.detail-image { width: 360px; height: 220px; object-fit:cover; border-radius:12px; border:1px solid #eef6ee; }
-.detail-meta h1 { margin:0 0 8px 0; }
-.detail-company { color:#556b56; margin-bottom:8px; }
-.detail-price { font-weight:700; color:#0b5e3c; margin-bottom:10px; }
-.detail-actions { display:flex; gap:10px; margin-top:12px; }
-.detail-body { margin-top:20px; background:#fff; padding:16px; border-radius:10px; border:1px solid #eef4ea; }
-
-@media (max-width: 900px) {
-  .game-sidebar { width: 100%; }
-  .shop-main { flex-direction: column; }
+/* ===== Header ===== */
+.shop-header {
+  margin-bottom: 24px;
 }
+
+.shop-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+
+.shop-subtitle {
+  color: #666;
+  margin-top: 6px;
+}
+
+/* ===== Layout ===== */
+.shop-main {
+  display: flex;
+  gap: 24px;
+}
+
+.shop-sidebar {
+  width: 260px;
+  position: sticky;
+  top: 90px;
+  align-self: flex-start;
+}
+
+.shop-content {
+  flex: 1;
+}
+
+/* ===== Grid ===== */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* ===== Pagination ===== */
+.pagination-wrapper {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.shop-pagination {
+  display: flex;
+  gap: 6px;
+}
+
+.page-btn,
+.page-num {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.page-num.active {
+  background: #108a00;
+  color: #fff;
+  border-color: #108a00;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  background: #fafafa;
+  border: 1px dashed #ddd;
+  padding: 48px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.empty-state h3 {
+  margin-bottom: 8px;
+}
+
+/* ===== Sidebar Wrapper ===== */
+.game-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.game-card:hover {
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* ===== Media ===== */
+.game-card-media {
+  position: relative;
+  height: 160px;
+  background: #f3f4f6;
+}
+
+.game-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-card-placeholder {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 40px;
+}
+
+/* ===== Category Badge ===== */
+.game-card-category {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #111827;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+/* ===== Body ===== */
+.game-card-body {
+  padding: 14px 16px;
+  flex: 1;
+}
+
+.game-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.game-card-desc {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+/* ===== Meta ===== */
+.game-card-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  font-size: 13px;
+}
+
+.meta-label {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.meta-value {
+  font-weight: 500;
+}
+
+.meta-value.price {
+  color: #108a00;
+  font-weight: 600;
+}
+
+/* ===== Footer ===== */
+.game-card-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* ===== Buttons ===== */
+.btn-primary {
+  flex: 1;
+  background: #108a00;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #0e7c00;
+}
+
+.btn-primary.full {
+  width: 100%;
+  text-align: center;
+}
+
+
+.btn-outline {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-outline:hover {
+  background: #f9fafb;
+}
+
+.sidebar-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* ===== Title ===== */
+.sidebar-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ===== Search ===== */
+.sidebar-search {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.sidebar-search:focus {
+  outline: none;
+  border-color: #108a00;
+}
+
+/* ===== Category List ===== */
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category-item {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #374151;
+}
+
+.category-item:hover {
+  background: #f9fafb;
+}
+
+/* ===== Active ===== */
+.category-item.active {
+  background: #ecfdf5;
+  color: #065f46;
+  font-weight: 600;
+  position: relative;
+}
+
+.category-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  background: #108a00;
+  border-radius: 0 4px 4px 0;
+}
+

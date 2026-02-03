@@ -2,15 +2,16 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import articlesData from "../data/articles";
 import Comment from "../components/Comment";
-import "../styles/articles.css";
+import "../styles/articleview.css";
 
 export default function ArticleView() {
   const { id } = useParams();
-  const article = articlesData.find((a) => a.id === parseInt(id)) || null;
+  const article = articlesData.find((a) => a.id === Number(id));
 
   const initialComments = Array.isArray(article?.comments)
     ? article.comments
     : [];
+
   const numericCommentsCount = !Array.isArray(article?.comments)
     ? article?.comments || 0
     : 0;
@@ -18,92 +19,103 @@ export default function ArticleView() {
   const [comments, setComments] = useState(initialComments);
   const [newComment, setNewComment] = useState("");
 
-  if (!article) return <div>Article not found</div>;
+  if (!article) return <div className="not-found">Article not found</div>;
 
   const handleAddComment = () => {
-    if (!newComment) return;
-    const comment = {
-      id: Date.now(),
-      user: "CurrentUser",
-      text: newComment,
-      replies: [],
-    };
-    setComments([...comments, comment]);
+    if (!newComment.trim()) return;
+
+    setComments([
+      ...comments,
+      {
+        id: Date.now(),
+        user: "CurrentUser",
+        text: newComment,
+        replies: [],
+      },
+    ]);
     setNewComment("");
   };
 
   return (
-    <div className="article-view-page">
-      <div className="article-view">
-        <main className="article-main">
+    <div className="article-page">
+      <div className="article-layout">
+        {/* MAIN CONTENT */}
+        <main className="article-card">
           <header className="article-header">
-            <h1 className="article-title">{article.title}</h1>
+            <h1>{article.title}</h1>
+
             <div className="article-meta">
-              <div>
+              <span>
                 By <strong>{article.author}</strong>
-              </div>
-              <div className="muted">Published: {article.createdAt}</div>
+              </span>
+              <span>• {article.createdAt}</span>
+              {article.rating && (
+                <span className="rating">⭐ {article.rating}</span>
+              )}
             </div>
           </header>
 
-          <section className="article-body">
-            <div className="article-intro">
-              <p className="rating">{article.rating ? `Rating: ${article.rating} ⭐` : null}</p>
-            </div>
+          <div className="article-content">{article.content}</div>
 
-            <div className="article-content">{article.content}</div>
-          </section>
+          {/* COMMENTS */}
+          <section className="comments">
+            <h3>
+              Comments ({numericCommentsCount + comments.length})
+            </h3>
 
-          <section className="comments-section">
-            <h3>Comments ({numericCommentsCount + comments.length})</h3>
-            <div className="comments-list">
-              {comments.map((c) => (
-                <Comment key={c.id} comment={c} />
-              ))}
-            </div>
+            {comments.map((c) => (
+              <Comment key={c.id} comment={c} />
+            ))}
 
-            <div className="new-comment">
+            <div className="comment-box">
               <textarea
-                placeholder="Add a comment..."
+                placeholder="Write a thoughtful comment…"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
               />
-              <button className="btn-primary" onClick={handleAddComment}>
-                Comment
-              </button>
+              <button onClick={handleAddComment}>Post Comment</button>
             </div>
           </section>
         </main>
 
-        <aside className="article-aside">
-          <div className="aside-card">
-            <div className="aside-stats">
-              <div className="stat">
-                <div className="stat-value">{article.recommends}</div>
-                <div className="stat-label">Recommends</div>
-              </div>
-              <div className="stat">
-                <div className="stat-value">{article.views}</div>
-                <div className="stat-label">Views</div>
-              </div>
-              <div className="stat">
-                <div className="stat-value">{numericCommentsCount + comments.length}</div>
-                <div className="stat-label">Comments</div>
-              </div>
+        {/* SIDEBAR */}
+        <aside className="article-sidebar">
+          <div className="sidebar-card sticky">
+            <div className="stats">
+              <Stat label="Recommends" value={article.recommends} />
+              <Stat label="Views" value={article.views} />
+              <Stat
+                label="Comments"
+                value={numericCommentsCount + comments.length}
+              />
             </div>
 
-            <div className="aside-actions">
-              <button className="btn-primary full">Apply / Reply</button>
-              <button className="btn-secondary full">Save</button>
-            </div>
+            <button className="btn-primary">Apply / Reply</button>
+            <button className="btn-outline">Save Article</button>
 
-            <div className="author-box">
-              <div className="author-name">{article.author}</div>
-              <div className="author-meta muted">Top author • Member since 2024</div>
+            <div className="author-card">
+              <div className="avatar">
+                {article.author?.[0]}
+              </div>
+              <div>
+                <div className="author-name">{article.author}</div>
+                <div className="muted">
+                  Top Author · Member since 2024
+                </div>
+              </div>
             </div>
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="stat">
+      <div className="stat-value">{value}</div>
+      <div className="stat-label">{label}</div>
     </div>
   );
 }

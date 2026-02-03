@@ -39,10 +39,7 @@ const stats = [
 function StatisticsBoard() {
   return (
     <section className="statistics-section">
-      <div className="statistics-header">
-        <h2>Platform Statistics</h2>
-        <p>Live overview of activity across the Sails ecosystem</p>
-      </div>
+      
 
       <div className="statistics-grid">
         {stats.map((item, index) => (

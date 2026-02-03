@@ -1,37 +1,54 @@
 import { Link } from "react-router-dom";
 
-export default function GameCard({ game, onCreateRoom, onJoinRoom, onView }) {
+export default function GameCard({ game }) {
   return (
-    <div className="product-card game-card">
-      <div className="product-media">
-        <div className="product-image">
-          {game.image ? <img src={game.image} alt={game.title} /> : <div className="placeholder">🎮</div>}
-        </div>
-        <div className="product-badge">{game.category}</div>
+    <article className="game-card">
+      {/* ---------- Media ---------- */}
+      <div className="game-card-media">
+        {game.image ? (
+          <img src={game.image} alt={game.title} />
+        ) : (
+          <div className="game-card-placeholder">🎮</div>
+        )}
+
+        <span className="game-card-category">{game.category}</span>
       </div>
 
-      <div className="product-body">
-        <h3 className="product-title">{game.title}</h3>
-        <p className="product-desc">{game.description}</p>
-        <div className="meta-row">
-          <div className="meta-left">
-            <div className="company">{game.company}</div>
-            <div className="contact">{game.contact}</div>
-          </div>
-          <div className="meta-right">
-            <div className="players">Players: <strong>{game.players}</strong></div>
-            <div className="price">{game.price}</div>
-          </div>
-        </div>
+      {/* ---------- Content ---------- */}
+      <div className="game-card-body">
+        <h3 className="game-card-title">{game.title}</h3>
 
-        <div className="product-footer">
-          <div className="actions">
-            <Link to={`/games/${game.id}`} className="btn-secondary" onClick={onView}>View</Link>
-            <button className="btn-secondary" onClick={() => onCreateRoom && onCreateRoom(game)}>Create Room</button>
-            <button className="btn-primary" onClick={() => onJoinRoom && onJoinRoom(game)}>Join Room</button>
+        <p className="game-card-desc">
+          {game.description?.length > 120
+            ? game.description.slice(0, 120) + "…"
+            : game.description}
+        </p>
+
+        {/* ---------- Meta ---------- */}
+        <div className="game-card-meta">
+          <div>
+            <div className="meta-label">Studio</div>
+            <div className="meta-value">{game.company}</div>
+          </div>
+
+          <div>
+            <div className="meta-label">Players</div>
+            <div className="meta-value">{game.players}</div>
+          </div>
+
+          <div>
+            <div className="meta-label">Price</div>
+            <div className="meta-value price">{game.price}</div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* ---------- Action ---------- */}
+      <footer className="game-card-footer">
+        <Link to={`/games/${game.id}`} className="btn-primary full">
+          View Game
+        </Link>
+      </footer>
+    </article>
   );
 }

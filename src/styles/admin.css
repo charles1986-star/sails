@@ -1,0 +1,359 @@
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+
+.admin-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+}
+
+.admin-container h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.admin-subtitle {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1rem;
+}
+
+/* Tabs */
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-weight: 500;
+}
+
+.tab-btn:hover {
+  color: #667eea;
+  background: #f5f5f5;
+  border-radius: 4px 4px 0 0;
+}
+
+.tab-btn.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+  background: linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+}
+
+.tab-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form */
+.admin-form {
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 8px;
+  margin-bottom: 40px;
+  border-left: 4px solid #667eea;
+}
+
+.admin-form h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.admin-form form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background-color: #fff;
+}
+
+.admin-form input:disabled,
+.admin-form select:disabled,
+.admin-form textarea:disabled {
+  background-color: #eee;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.admin-form textarea {
+  grid-column: 1 / -1;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-buttons {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+}
+
+.form-buttons button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.form-buttons button[type="submit"] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  flex: 1;
+  max-width: 200px;
+}
+
+.form-buttons button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.form-buttons button[type="button"] {
+  background: #e0e0e0;
+  color: #333;
+  flex: 1;
+  max-width: 150px;
+}
+
+.form-buttons button[type="button"]:hover:not(:disabled) {
+  background: #d0d0d0;
+}
+
+.form-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Table */
+.admin-table-container {
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.admin-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.admin-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #667eea;
+}
+
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.text-center {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* Action Buttons */
+.btn-edit,
+.btn-delete {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-edit {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-edit:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-delete {
+  background: #f44336;
+  color: white;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: #da190b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+.btn-edit:disabled,
+.btn-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 20px;
+  }
+
+  .admin-container h1 {
+    font-size: 1.8rem;
+  }
+
+  .admin-tabs {
+    gap: 5px;
+  }
+
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .admin-form {
+    padding: 20px;
+  }
+
+  .admin-form form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table {
+    font-size: 0.85rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 12px;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    margin-right: 5px;
+  }
+
+  .form-buttons {
+    flex-direction: column;
+  }
+
+  .form-buttons button {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-page {
+    padding: 20px 10px;
+  }
+
+  .admin-container {
+    padding: 15px;
+  }
+
+  .admin-container h1 {
+    font-size: 1.5rem;
+  }
+
+  .admin-tabs {
+    gap: 3px;
+  }
+
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .admin-form {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+
+  .admin-table {
+    font-size: 0.75rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 10px;
+  }
+}
+
+/* Loading/Disabled state */
+.admin-container.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Success and Error messages */
+.notice {
+  margin-bottom: 20px;
+}

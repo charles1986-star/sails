@@ -113,8 +113,6 @@
 
 /* Search input (FIXED SIZE, CLEAN) */
 .search-input {
-  width: 300px;
-  max-width: 100%;          /* never exceed sidebar */
   box-sizing: border-box;   /* critical fix */
   padding: 8px 10px;
 

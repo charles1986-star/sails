@@ -1,86 +1,119 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signupUser } from "../utils/auth";
-import { updateUserProfile } from "../utils/walletUtils";
-import "../styles/signup.css";
+import Notice from "../components/Notice";
+import "../styles/auth.css";
 
-export default function Signup() {
-  const navigate = useNavigate();
-  const [name, setName] = useState("");
+export default function SignUp() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("freelancer");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState({ message: "", type: "" });
+  const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      alert("Please fill all fields.");
+    setNotice({ message: "", type: "" });
+
+    // Validation
+    if (!username || !email || !password || !confirmPassword) {
+      setNotice({ message: "All fields are required", type: "error" });
       return;
     }
 
-    const res = signupUser({ name, email, password });
-    if (!res.success) {
-      alert(res.message);
+    if (username.length < 3) {
+      setNotice({ message: "Username must be at least 3 characters", type: "error" });
       return;
     }
-    // update demo wallet profile
-    updateUserProfile({ userName: name });
-    window.dispatchEvent(new Event('walletUpdated'));
-    navigate("/");
-  }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setNotice({ message: "Please enter a valid email address", type: "error" });
+      return;
+    }
+
+    if (password.length < 6) {
+      setNotice({ message: "Password must be at least 6 characters", type: "error" });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setNotice({ message: "Passwords do not match", type: "error" });
+      return;
+    }
+
+    setLoading(true);
+    const res = await signupUser({ username, email, password, confirmPassword });
+    setLoading(false);
+
+    if (!res.success) {
+      setNotice({ message: res.message, type: res.type });
+      return;
+    }
+
+    setNotice({ message: res.message, type: res.type });
+    
+    setTimeout(() => {
+      navigate("/login");
+    }, 1500);
+  };
 
   return (
-    <div className="signup-page">
-      <div className="container signup-inner">
-        <div className="signup-card">
-          <div className="signup-left">
-            <h1>Create your account</h1>
-            <p className="lead">Join Sail to hire talent or find work in sail transport.</p>
+    <div className="auth-page">
+      <Notice 
+        message={notice.message} 
+        type={notice.type}
+        onClose={() => setNotice({ message: "", type: "" })}
+      />
 
-            <form className="signup-form" onSubmit={handleSubmit}>
-              <label>
-                Full name
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" />
-              </label>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <h2>Sign Up</h2>
 
-              <label>
-                Email
-                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
-              </label>
+        <label>Username</label>
+        <input 
+          value={username} 
+          onChange={e => setUsername(e.target.value)} 
+          placeholder="Enter username (min 3 chars)"
+          disabled={loading}
+        />
 
-              <label>
-                Password
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Choose a password" />
-              </label>
+        <label>Email</label>
+        <input 
+          value={email} 
+          onChange={e => setEmail(e.target.value)} 
+          placeholder="Enter your email"
+          type="email"
+          disabled={loading}
+        />
 
-              <div className="role-row">
-                <label className={role === "freelancer" ? "selected" : ""}>
-                  <input type="radio" name="role" value="freelancer" checked={role === "freelancer"} onChange={() => setRole("freelancer")} />
-                  I'm looking for work
-                </label>
+        <label>Password</label>
+        <input 
+          value={password} 
+          onChange={e => setPassword(e.target.value)} 
+          placeholder="Enter password (min 6 chars)"
+          type="password"
+          disabled={loading}
+        />
 
-                <label className={role === "client" ? "selected" : ""}>
-                  <input type="radio" name="role" value="client" checked={role === "client"} onChange={() => setRole("client")} />
-                  I'm hiring
-                </label>
-              </div>
+        <label>Confirm Password</label>
+        <input 
+          value={confirmPassword} 
+          onChange={e => setConfirmPassword(e.target.value)} 
+          placeholder="Confirm your password"
+          type="password"
+          disabled={loading}
+        />
 
-              <div className="form-actions">
-                <button className="btn-primary" type="submit">Create account</button>
-              </div>
-            </form>
-          </div>
+        <button type="submit" disabled={loading}>
+          {loading ? "Signing Up..." : "Sign Up"}
+        </button>
 
-          <div className="signup-right">
-            <h3>Why Sail?</h3>
-            <ul>
-              <li>Access vetted professionals specialized in maritime transport</li>
-              <li>Secure contracts and simple billing</li>
-              <li>Project posting and talent matching in one place</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+        <p className="redirect">
+          Already have an account? <span onClick={() => navigate("/login")} style={{ cursor: "pointer", color: "#007bff" }}>Login</span>
+        </p>
+      </form>
     </div>
   );
 }

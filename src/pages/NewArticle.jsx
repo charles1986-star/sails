@@ -59,13 +59,18 @@ export default function NewArticle() {
               placeholder="Write a clear title for your article"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              className="input-field"
             />
           </div>
 
           <div className="form-row">
             <div className="form-section" style={{ flex: 1 }}>
               <label className="label">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="input-field"
+              >
                 <option value="">Select category</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -75,7 +80,11 @@ export default function NewArticle() {
 
             <div className="form-section" style={{ width: 180 }}>
               <label className="label">Project type</label>
-              <select value={projectType} onChange={(e) => setProjectType(e.target.value)}>
+              <select
+                value={projectType}
+                onChange={(e) => setProjectType(e.target.value)}
+                className="input-field"
+              >
                 <option value="fixed">Fixed-price</option>
                 <option value="hourly">Hourly</option>
               </select>
@@ -89,6 +98,7 @@ export default function NewArticle() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={10}
+              className="textarea-field"
             />
           </div>
 
@@ -100,12 +110,17 @@ export default function NewArticle() {
                 placeholder="e.g. $500"
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
+                className="input-field"
               />
             </div>
 
             <div className="form-section" style={{ width: 220 }}>
               <label className="label">Experience level</label>
-              <select value={experience} onChange={(e) => setExperience(e.target.value)}>
+              <select
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                className="input-field"
+              >
                 <option value="any">Any</option>
                 <option value="entry">Entry level</option>
                 <option value="intermediate">Intermediate</option>
@@ -121,6 +136,7 @@ export default function NewArticle() {
               placeholder="Comma-separated skills (e.g. React, routing, UX)"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
+              className="input-field"
             />
           </div>
 

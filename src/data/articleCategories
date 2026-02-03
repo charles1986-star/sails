@@ -1,0 +1,38 @@
+const articleCategories = [
+  {
+    id: "tech",
+    name: "Technology",
+    count: 12,
+    children: [
+      {
+        id: "frontend",
+        name: "Frontend",
+        count: 5,
+        children: [
+          { id: "react", name: "React", count: 3 },
+          { id: "vue", name: "Vue", count: 2 }
+        ]
+      },
+      {
+        id: "backend",
+        name: "Backend",
+        count: 7,
+        children: [
+          { id: "node", name: "Node.js", count: 4 },
+          { id: "django", name: "Django", count: 3 }
+        ]
+      }
+    ]
+  },
+  {
+    id: "design",
+    name: "Design",
+    count: 8,
+    children: [
+      { id: "uiux", name: "UI / UX", count: 4 },
+      { id: "branding", name: "Branding", count: 4 }
+    ]
+  }
+];
+
+export default articleCategories;

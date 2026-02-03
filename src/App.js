@@ -17,6 +17,7 @@ import Articles from "./pages/Articles";
 import Library from "./pages/Library";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
 import Notice from "./components/Notice";
 import ShipSearch from "./pages/ShipSearch";
 import ShipDetail from "./pages/ShipDetail";
@@ -25,6 +26,7 @@ import Applications from "./pages/Applications";
 import MyAccount from "./pages/MyAccount";
 import SailsIntro from "./components/landing/SailsIntro";
 import ScrollToTop from "./components/ScrollToTop";
+import { getCurrentUser } from "./utils/auth";
 
 
 function App() {
@@ -52,8 +54,11 @@ function App() {
   useEffect(() => {
     // load current user from localStorage (auth util)
     try {
-      const u = localStorage.getItem('sails_current_user');
-      if (u) setUser(JSON.parse(u));
+      const u = getCurrentUser();
+      if (u) {
+        setUser(u);
+        setLoggedIn(true);
+      }
     } catch (e) {}
   }, []);
 
@@ -64,7 +69,9 @@ function App() {
 
   function handleLogout() {
     localStorage.removeItem('sails_current_user');
+    localStorage.removeItem('sails_auth_token');
     setUser(null);
+    setLoggedIn(false);
     setNotice('You have been signed out');
   }
 
@@ -72,6 +79,17 @@ function App() {
     setNotice(message);
     // Dispatch custom event to update navbar balance
     window.dispatchEvent(new Event("walletUpdated"));
+  };
+
+  // Protected route component
+  const ProtectedRoute = ({ element, requiredRole = null }) => {
+    if (!user) {
+      return <Navigate to="/login" />;
+    }
+    if (requiredRole && user.role !== requiredRole) {
+      return <Navigate to="/" />;
+    }
+    return element;
   };
 
   return (
@@ -103,7 +121,8 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/my-account" element={<MyAccount />} />
-        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/admin" element={<Admin />}  />
+        {/* <Route path="/admin" element={<ProtectedRoute element={<Admin />} requiredRole="admin" />} /> */}
       </Routes>
 
       {selectedProduct && (

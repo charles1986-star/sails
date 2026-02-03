@@ -5,6 +5,15 @@
   gap: 24px;
   padding: 28px;
   align-items: start;
+  max-width:95%;
+}
+
+.shipsearch-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  padding: 24px;
+  background: #F5F7FA;
 }
 
 .filters-header { display:flex; justify-content:space-between; align-items:center; }
