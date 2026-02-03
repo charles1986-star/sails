@@ -17,7 +17,6 @@ import Articles from "./pages/Articles";
 import Library from "./pages/Library";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
-import Admin from "./pages/Admin";
 import Notice from "./components/Notice";
 import ShipSearch from "./pages/ShipSearch";
 import ShipDetail from "./pages/ShipDetail";
@@ -27,6 +26,15 @@ import MyAccount from "./pages/MyAccount";
 import SailsIntro from "./components/landing/SailsIntro";
 import ScrollToTop from "./components/ScrollToTop";
 import { getCurrentUser } from "./utils/auth";
+
+// Admin pages
+import AdminTransactions from "./pages/admin/Transactions";
+import AdminBooks from "./pages/admin/Books";
+import AdminMedia from "./pages/admin/Media";
+import AdminArticles from "./pages/admin/Articles";
+import AdminShops from "./pages/admin/Shops";
+import AdminShips from "./pages/admin/Ships";
+import AdminGames from "./pages/admin/Games";
 
 
 function App() {
@@ -121,8 +129,24 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/my-account" element={<MyAccount />} />
-        <Route path="/admin" element={<Admin />}  />
-        {/* <Route path="/admin" element={<ProtectedRoute element={<Admin />} requiredRole="admin" />} /> */}
+        
+        {/* Admin routes */}
+        {/* <Route path="/admin/transactions" element={<ProtectedRoute element={<AdminTransactions />} requiredRole="admin" />} />
+        <Route path="/admin/books" element={<ProtectedRoute element={<AdminBooks />} requiredRole="admin" />} />
+        <Route path="/admin/media" element={<ProtectedRoute element={<AdminMedia />} requiredRole="admin" />} />
+        <Route path="/admin/articles" element={<ProtectedRoute element={<AdminArticles />} requiredRole="admin" />} />
+        <Route path="/admin/shops" element={<ProtectedRoute element={<AdminShops />} requiredRole="admin" />} />
+        <Route path="/admin/ships" element={<ProtectedRoute element={<AdminShips />} requiredRole="admin" />} />
+        <Route path="/admin/games" element={<ProtectedRoute element={<AdminGames />} requiredRole="admin" />} /> */}
+
+
+        <Route path="/admin/transactions" element={<ProtectedRoute element={<AdminTransactions />} requiredRole="admin" />} />
+        <Route path="/admin/books" element={<ProtectedRoute element={<AdminBooks />} requiredRole="admin" />} />
+        <Route path="/admin/media" element={<ProtectedRoute element={<AdminMedia />} requiredRole="admin" />} />
+        <Route path="/admin/articles" element={<ProtectedRoute element={<AdminArticles />} requiredRole="admin" />} />
+        <Route path="/admin/shops" element={<ProtectedRoute element={<AdminShops />} requiredRole="admin" />} />
+        <Route path="/admin/ships" element={<ProtectedRoute element={<AdminShips />} requiredRole="admin" />} />
+        <Route path="/admin/games" element={<ProtectedRoute element={<AdminGames />} requiredRole="admin" />} />
       </Routes>
 
       {selectedProduct && (
