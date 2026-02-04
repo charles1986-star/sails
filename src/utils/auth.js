@@ -1,4 +1,6 @@
 import axios from "axios";
+import store from "../redux/store";
+import { loginSuccess, loginFailure, signupSuccess, signupFailure, logout, restoreAuth } from "../redux/slices/authSlice";
 
 const CURRENT_USER_KEY = "sails_current_user";
 const TOKEN_KEY = "sails_auth_token";
@@ -7,9 +9,11 @@ const API_URL = "http://localhost:5000/api";
 export async function signupUser(userData) {
   try {
     const response = await axios.post(`${API_URL}/signup`, userData);
+    store.dispatch(signupSuccess());
     return { success: true, message: response.data.msg, type: response.data.type };
   } catch (error) {
     const message = error.response?.data?.msg || "Signup failed";
+    store.dispatch(signupFailure(message));
     return { success: false, message, type: "error" };
   }
 }
@@ -22,6 +26,9 @@ export async function loginUser(email, password) {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
     
+    // Dispatch to Redux
+    store.dispatch(loginSuccess({ user, token }));
+    
     return { 
       success: true, 
       message: response.data.msg, 
@@ -30,6 +37,7 @@ export async function loginUser(email, password) {
     };
   } catch (error) {
     const message = error.response?.data?.msg || "Login failed";
+    store.dispatch(loginFailure(message));
     return { success: false, message, type: "error" };
   }
 }
@@ -37,6 +45,7 @@ export async function loginUser(email, password) {
 export function logoutUser() {
   localStorage.removeItem(CURRENT_USER_KEY);
   localStorage.removeItem(TOKEN_KEY);
+  store.dispatch(logout());
 }
 
 export function getCurrentUser() {
@@ -57,4 +66,13 @@ export function getAuthHeader() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export default { signupUser, loginUser, logoutUser, getCurrentUser, getAuthToken, isAuthenticated, getAuthHeader };
+// Initialize Redux store from localStorage
+export function initializeAuth() {
+  const token = getAuthToken();
+  const user = getCurrentUser();
+  if (token && user) {
+    store.dispatch(restoreAuth({ token, user }));
+  }
+}
+
+export default { signupUser, loginUser, logoutUser, getCurrentUser, getAuthToken, isAuthenticated, getAuthHeader, initializeAuth };

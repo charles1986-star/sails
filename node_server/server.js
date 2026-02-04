@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import path from 'path';
 import fs from 'fs';
+import { exec } from 'child_process';
 import transactionsRouter from './routes/transactions.js';
 import shopsRouter from './routes/shops.js';
 import booksRouter from './routes/books.js';
@@ -292,7 +293,81 @@ app.delete("/api/admin/articles/:id", verifyToken, verifyAdmin, async (req, res)
 app.use('/uploads', express.static(path.join(process.cwd(), 'node_server', 'uploads')));
 
 // ==================== MEDIA STREAMING ====================
-// Stream video files with byte-range support
+
+// Helper function to get video duration and codec info
+function getVideoInfo(filepath) {
+  return new Promise((resolve, reject) => {
+    exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1:noprint_sections=1 "${filepath}"`, (error, stdout) => {
+      if (error) {
+        return resolve({ duration: 0, error: true });
+      }
+      const duration = parseFloat(stdout.trim());
+      resolve({ duration: isNaN(duration) ? 0 : duration, error: false });
+    });
+  });
+}
+
+// HLS Playlist endpoint
+app.get('/api/hls/playlist/:videoId', verifyToken, async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const videoPath = path.join(process.cwd(), 'node_server', 'uploads', videoId);
+    const playlistPath = path.join(process.cwd(), 'node_server', 'uploads', `${videoId}.m3u8`);
+
+    // Check if video exists
+    if (!fs.existsSync(videoPath)) {
+      return res.status(404).json({ msg: 'Video not found' });
+    }
+
+    // Check if playlist exists, if not generate it
+    if (!fs.existsSync(playlistPath)) {
+      // Generate HLS playlist with ffmpeg
+      exec(`ffmpeg -i "${videoPath}" -codec: copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls "${playlistPath}"`, (error) => {
+        if (error) {
+          console.error('FFmpeg error:', error);
+          return res.status(500).json({ msg: 'Could not generate HLS stream' });
+        }
+      });
+    }
+
+    // Send the playlist file
+    res.type('application/vnd.apple.mpegurl');
+    fs.createReadStream(playlistPath).pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Streaming error' });
+  }
+});
+
+// HLS Segment endpoint
+app.get('/api/hls/segment/:videoId/:segmentIndex', verifyToken, (req, res) => {
+  try {
+    const { videoId, segmentIndex } = req.params;
+    const segmentPath = path.join(
+      process.cwd(),
+      'node_server',
+      'uploads',
+      `${videoId}${segmentIndex}.ts`
+    );
+
+    // Security check
+    if (!segmentPath.startsWith(path.join(process.cwd(), 'node_server', 'uploads'))) {
+      return res.status(403).json({ msg: 'Access denied' });
+    }
+
+    if (!fs.existsSync(segmentPath)) {
+      return res.status(404).json({ msg: 'Segment not found' });
+    }
+
+    res.type('video/MP2T');
+    fs.createReadStream(segmentPath).pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Segment streaming error' });
+  }
+});
+
+// Progressive download with byte-range support (fallback for older clients)
 app.get('/api/stream/:filename', verifyToken, (req, res) => {
   try {
     const { filename } = req.params;

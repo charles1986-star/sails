@@ -1,373 +1,166 @@
-/* ScorePurchase Modal Styles - Upwork Inspired */
-
-.score-modal-overlay {
+/* overlay */
+.score-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0,0,0,.55);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
+/* modal */
 .score-modal {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 900px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.score-modal-header {
-  padding: 32px 32px 16px;
-  border-bottom: 1px solid #e2e8f0;
-  position: relative;
-}
-
-.score-modal-header h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #0b5e3c;
-}
-
-.score-subtitle {
-  margin: 8px 0 0 0;
-  font-size: 14px;
-  color: #64748b;
-}
-
-.score-close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  color: #94a3b8;
-  padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 720px;
+  max-width: 95%;
+  background: #fff;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 25px 60px rgba(0,0,0,.25);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s;
+  flex-direction: column;
+  gap: 24px;
+  font-family: system-ui;
 }
 
-.score-close-btn:hover {
-  background-color: #f1f5f9;
-  color: #1e293b;
-}
-
-.score-current-balance {
+/* header */
+.score-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 24px 32px;
-  background-color: #f0fdf4;
-  border-left: 4px solid #0b5e3c;
+  align-items: center;
 }
 
-.balance-label {
+.score-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.score-header p {
+  margin: 4px 0 0;
+  color: #6b7280;
   font-size: 14px;
-  color: #475569;
-  font-weight: 500;
 }
 
-.balance-amount {
-  font-size: 32px;
-  font-weight: 700;
-  color: #0b5e3c;
-  margin-left: 16px;
+.close-btn {
+  border: none;
+  font-size: 22px;
+  background: none;
+  cursor: pointer;
 }
 
-.score-packages {
+/* balance */
+.balance-card {
+  background: #f3f6f4;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+/* packages */
+.packages-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  padding: 32px;
 }
 
-.score-package {
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 24px;
+.pkg-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 18px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
+  transition: .2s;
+  background: white;
 }
 
-.score-package:hover {
-  border-color: #0b5e3c;
-  box-shadow: 0 4px 12px rgba(11, 94, 60, 0.1);
-  transform: translateY(-4px);
+.pkg-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
 }
 
-.score-package.selected {
-  border-color: #0b5e3c;
-  background-color: #f0fdf4;
-  box-shadow: 0 8px 20px rgba(11, 94, 60, 0.15);
+.pkg-card.active {
+  border: 2px solid #14a800;
 }
 
-.score-package.popular {
-  border-color: #0b5e3c;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+.pkg-card.popular {
+  background: #ecfdf5;
+  border-color: #14a800;
 }
 
-.popular-badge {
-  position: absolute;
-  top: -12px;
-  right: 16px;
-  background: linear-gradient(135deg, #0b5e3c 0%, #16a34a 100%);
+.badge {
+  font-size: 11px;
+  background: #14a800;
   color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(11, 94, 60, 0.2);
-}
-
-.package-score {
-  margin-bottom: 12px;
-}
-
-.score-big {
-  display: block;
-  font-size: 36px;
-  font-weight: 700;
-  color: #0b5e3c;
-}
-
-.score-label {
-  display: block;
-  font-size: 14px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-.package-bonus {
-  padding: 8px;
-  background-color: #fff7ed;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-
-.bonus-label {
-  font-size: 13px;
-  color: #ea580c;
-  font-weight: 600;
-}
-
-.package-price {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 12px 0;
-}
-
-.package-value {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-bottom: 16px;
-}
-
-.package-select-btn {
-  width: 100%;
-  padding: 10px 16px;
-  background-color: #e2e8f0;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.score-package.selected .package-select-btn {
-  background-color: #0b5e3c;
-  color: white;
-}
-
-.package-select-btn:hover {
-  background-color: #cbd5e1;
-}
-
-.score-package.selected .package-select-btn:hover {
-  background-color: #0d6e47;
-}
-
-.score-payment-method {
-  padding: 0 32px 24px;
-}
-
-.score-payment-method label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
+  padding: 3px 8px;
+  border-radius: 10px;
+  display: inline-block;
   margin-bottom: 8px;
 }
 
-.payment-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: #f8fafc;
-  cursor: pointer;
-  transition: all 0.2s;
+.pkg-score {
+  font-size: 24px;
+  font-weight: 700;
 }
 
-.payment-select:hover,
-.payment-select:focus {
-  border-color: #0b5e3c;
-  background-color: white;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(11, 94, 60, 0.1);
+.pkg-score span {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
 }
 
-.score-modal-footer {
+.pkg-price {
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.pkg-value {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* payment */
+.payment-row {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.payment-row select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+/* footer */
+.score-footer {
+  display: flex;
   justify-content: flex-end;
-  padding: 24px 32px;
-  border-top: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  gap: 12px;
 }
 
-.score-cancel-btn,
-.score-purchase-btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+.btn-light {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: white;
 }
 
-.score-cancel-btn {
-  background-color: #e2e8f0;
-  color: #475569;
-}
-
-.score-cancel-btn:hover {
-  background-color: #cbd5e1;
-  color: #1e293b;
-}
-
-.score-purchase-btn {
-  background-color: #0b5e3c;
+.btn-primary {
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: #14a800;
   color: white;
-  min-width: 140px;
+  border: none;
 }
 
-.score-purchase-btn:hover:not(:disabled) {
-  background-color: #0d6e47;
-  box-shadow: 0 4px 12px rgba(11, 94, 60, 0.3);
+.btn-primary:disabled {
+  opacity: .5;
 }
 
-.score-purchase-btn:disabled {
-  background-color: #cbd5e1;
-  color: #94a3b8;
-  cursor: not-allowed;
-}
-
-.score-info {
-  padding: 16px 32px 32px;
-  background-color: #fef3c7;
-  border-radius: 0 0 12px 12px;
-  font-size: 13px;
-  color: #78350f;
+.score-note {
   text-align: center;
-}
-
-.score-info p {
-  margin: 0;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .score-modal {
-    width: 95%;
-    max-height: 95vh;
-  }
-
-  .score-modal-header {
-    padding: 24px 20px 16px;
-  }
-
-  .score-modal-header h2 {
-    font-size: 24px;
-  }
-
-  .score-current-balance {
-    padding: 20px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .balance-amount {
-    margin-left: 0;
-    margin-top: 8px;
-  }
-
-  .score-packages {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    padding: 20px;
-  }
-
-  .score-package {
-    padding: 16px;
-  }
-
-  .score-modal-footer {
-    flex-direction: column-reverse;
-    padding: 16px 20px;
-  }
-
-  .score-cancel-btn,
-  .score-purchase-btn {
-    width: 100%;
-  }
-
-  .score-payment-method,
-  .score-info {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
+  font-size: 12px;
+  color: #6b7280;
 }

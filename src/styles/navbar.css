@@ -47,6 +47,17 @@
   transform: translateY(-1px);
 }
 
+.nav-links .admin-link {
+  color: #d97706;
+  font-weight: 700;
+  background-color: rgba(217, 119, 6, 0.1);
+}
+
+.nav-links .admin-link:hover {
+  color: #b45309;
+  background-color: rgba(217, 119, 6, 0.2);
+}
+
 /* Login Button */
 .login-btn {
   background: #ffffff;

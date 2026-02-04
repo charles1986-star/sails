@@ -49,6 +49,9 @@ export default function Navbar({ cartCount, user, onLoginClick, onLogout, onScor
           <Link to="/library">Library</Link>
           <Link to="/shop">Shop</Link>
           <Link to="/articles">Article</Link>
+          {user && user.role === "admin" && (
+            <Link to="/admin/dashboard" className="admin-link">Admin</Link>
+          )}
         </nav>
 
         <div className="auth-actions">
