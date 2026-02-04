@@ -123,12 +123,22 @@ async function initDatabase() {
     )`,
     `CREATE TABLE IF NOT EXISTS ships (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      imo VARCHAR(10) UNIQUE NOT NULL,
       name VARCHAR(255) NOT NULL,
-      description TEXT,
-      specifications TEXT,
+      type VARCHAR(100) NOT NULL,
+      capacity_tons INT NOT NULL,
+      current_port VARCHAR(255),
+      next_port VARCHAR(255),
+      ship_owner VARCHAR(255),
       image_url VARCHAR(255),
-      status ENUM('active', 'inactive') DEFAULT 'active',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      last_maintenance_date DATE,
+      status ENUM('active', 'maintenance', 'decommissioned') DEFAULT 'active',
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_imo (imo),
+      INDEX idx_status (status),
+      INDEX idx_imo (imo)
     )`,
     `CREATE TABLE IF NOT EXISTS games (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -138,6 +148,31 @@ async function initDatabase() {
       price DECIMAL(10, 2) DEFAULT 0,
       status ENUM('active', 'inactive') DEFAULT 'active',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS applications (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      ship_id INT NOT NULL,
+      ship_imo VARCHAR(10),
+      cargo_type VARCHAR(100),
+      cargo_weight DECIMAL(10, 2),
+      weight_unit VARCHAR(20),
+      preferred_loading_date DATE,
+      preferred_arrival_date DATE,
+      contact_name VARCHAR(255),
+      contact_email VARCHAR(255),
+      contact_phone VARCHAR(20),
+      message LONGTEXT,
+      status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+      admin_message LONGTEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (ship_id) REFERENCES ships(id) ON DELETE CASCADE,
+      INDEX idx_user_id (user_id),
+      INDEX idx_ship_id (ship_id),
+      INDEX idx_status (status),
+      INDEX idx_created_at (created_at)
     )`
   ];
 

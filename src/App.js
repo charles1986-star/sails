@@ -35,6 +35,7 @@ import AdminTransactions from "./pages/admin/Transactions";
 import AdminBooks from "./pages/admin/Books";
 import AdminMedia from "./pages/admin/Media";
 import AdminArticles from "./pages/admin/Articles";
+import AdminApplications from "./pages/admin/Applications";
 import AdminShops from "./pages/admin/Shops";
 import AdminShips from "./pages/admin/Ships";
 import AdminGames from "./pages/admin/Games";
@@ -139,6 +140,7 @@ function App() {
 
 
         <Route path="/admin/dashboard" element={<ProtectedRoute element={<AdminDashboard />} requiredRole="admin" />} />
+        <Route path="/admin/applications" element={<ProtectedRoute element={<AdminApplications />} requiredRole="admin" />} />
         <Route path="/admin/transactions" element={<ProtectedRoute element={<AdminTransactions />} requiredRole="admin" />} />
         <Route path="/admin/books" element={<ProtectedRoute element={<AdminBooks />} requiredRole="admin" />} />
         <Route path="/admin/media" element={<ProtectedRoute element={<AdminMedia />} requiredRole="admin" />} />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser, getAuthHeader } from "../../utils/auth";
+import { useSelector } from "react-redux";
+import { getAuthHeader } from "../../utils/auth";
 import Notice from "../../components/Notice";
 import axios from "axios";
 import "../../styles/admin.css";
@@ -9,7 +10,7 @@ const API_URL = "http://localhost:5000/api/admin";
 
 export default function Media() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const user = useSelector((state) => state.auth.user);
   const [notice, setNotice] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [media, setMedia] = useState([]);

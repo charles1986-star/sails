@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { getCurrentUser } from "../../utils/auth";
+import { useSelector } from "react-redux";
 import "../../styles/admin.css";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     // Check if user is admin
@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   }, [user, navigate]);
 
   const adminSections = [
+    { name: "Applications", path: "/admin/applications", icon: "📋" },
     { name: "Transactions", path: "/admin/transactions", icon: "💳" },
     { name: "Books", path: "/admin/books", icon: "📚" },
     { name: "Media", path: "/admin/media", icon: "🎬" },
