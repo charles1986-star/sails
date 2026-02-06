@@ -68,6 +68,19 @@ const verifyAdmin = (req, res, next) => {
 // Initialize database tables
 async function initDatabase() {
   const queries = [
+    
+    `CREATE TABLE IF NOT EXISTS categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      parent_id INT,
+      description TEXT,
+      status ENUM('active', 'inactive') DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,
+      INDEX idx_status (status),
+      INDEX idx_parent_id (parent_id)
+    )`,
     `CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
       username VARCHAR(255) UNIQUE NOT NULL,
@@ -143,6 +156,7 @@ async function initDatabase() {
       imo VARCHAR(10) UNIQUE NOT NULL,
       name VARCHAR(255) NOT NULL,
       type VARCHAR(100) NOT NULL,
+      category_id INT,
       capacity_tons INT NOT NULL,
       current_port VARCHAR(255),
       next_port VARCHAR(255),
@@ -153,9 +167,11 @@ async function initDatabase() {
       description TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
       UNIQUE KEY unique_imo (imo),
       INDEX idx_status (status),
-      INDEX idx_imo (imo)
+      INDEX idx_imo (imo),
+      INDEX idx_category_id (category_id)
     )`,
     `CREATE TABLE IF NOT EXISTS games (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -192,18 +208,6 @@ async function initDatabase() {
       INDEX idx_ship_id (ship_id),
       INDEX idx_status (status),
       INDEX idx_created_at (created_at)
-    )`,
-    `CREATE TABLE IF NOT EXISTS categories (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(255) NOT NULL UNIQUE,
-      parent_id INT,
-      description TEXT,
-      status ENUM('active', 'inactive') DEFAULT 'active',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,
-      INDEX idx_status (status),
-      INDEX idx_parent_id (parent_id)
     )`
   ];
 

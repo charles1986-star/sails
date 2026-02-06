@@ -25,6 +25,7 @@ export default function AdminDashboard() {
     { name: "Shops", path: "/admin/shops", icon: "🏪" },
     { name: "Ships", path: "/admin/ships", icon: "⛵" },
     { name: "Games", path: "/admin/games", icon: "🎮" },
+    { name: "Categories", path: "/admin/categories", icon: "🏷️" },
   ];
 
   return (

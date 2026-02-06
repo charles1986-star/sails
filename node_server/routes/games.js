@@ -18,12 +18,12 @@ router.get('/games', verifyToken, verifyAdmin, async (req, res) => {
 // POST /games
 router.post('/games', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const { title, description, category, price } = req.body;
+    const { title, description, category_id, price } = req.body;
     if (!title) return res.status(400).json({ msg: 'Game title required', type: 'error' });
 
     await db.query(
-      'INSERT INTO games (title, description, category, price, status) VALUES (?, ?, ?, ?, ?)',
-      [title, description, category, price || 0, 'active']
+      'INSERT INTO games (title, description, category_id, price, status) VALUES (?, ?, ?, ?, ?)',
+      [title, description, category_id || null, price || 0, 'active']
     );
 
     res.status(201).json({ msg: 'Game created successfully', type: 'success' });
@@ -37,11 +37,11 @@ router.post('/games', verifyToken, verifyAdmin, async (req, res) => {
 router.put('/games/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, category, price, status } = req.body;
+    const { title, description, category_id, price, status } = req.body;
 
     await db.query(
-      'UPDATE games SET title = ?, description = ?, category = ?, price = ?, status = ? WHERE id = ?',
-      [title, description, category, price, status, id]
+      'UPDATE games SET title = ?, description = ?, category_id = ?, price = ?, status = ? WHERE id = ?',
+      [title, description, category_id || null, price, status, id]
     );
 
     res.json({ msg: 'Game updated successfully', type: 'success' });

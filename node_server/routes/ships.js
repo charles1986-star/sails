@@ -7,8 +7,8 @@ import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Ensure public uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+// Ensure public uploads directory exists for ships
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'ship');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -89,7 +89,7 @@ router.get('/ships/:id', async (req, res) => {
 // POST - Create new ship (admin only)
 router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (req, res) => {
   try {
-    const { name, imo, type, capacity_tons, current_port, next_port, ship_owner, description, last_maintenance_date } = req.body;
+    const { name, imo, type, capacity_tons, current_port, next_port, ship_owner, description, last_maintenance_date, category_id } = req.body;
 
     // Validation
     if (!name || !imo || !type || !capacity_tons) {
@@ -106,12 +106,12 @@ router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (r
       return res.status(400).json({ msg: 'IMO number already exists', type: 'error' });
     }
 
-    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    const image_url = req.file ? `/uploads/ship/${req.file.filename}` : null;
 
     await db.query(
-      `INSERT INTO ships (name, imo, type, capacity_tons, current_port, next_port, ship_owner, image_url, description, last_maintenance_date, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, imo, type, parseInt(capacity_tons), current_port || null, next_port || null, ship_owner || null, image_url, description || null, last_maintenance_date || null, 'active']
+      `INSERT INTO ships (name, imo, type, category_id, capacity_tons, current_port, next_port, ship_owner, image_url, description, last_maintenance_date, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, imo, type, category_id || null, parseInt(capacity_tons), current_port || null, next_port || null, ship_owner || null, image_url, description || null, last_maintenance_date || null, 'active']
     );
 
     res.status(201).json({ msg: 'Ship created successfully', type: 'success' });
@@ -125,7 +125,7 @@ router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (r
 router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, imo, type, capacity_tons, current_port, next_port, ship_owner, description, last_maintenance_date, status } = req.body;
+    const { name, imo, type, category_id, capacity_tons, current_port, next_port, ship_owner, description, last_maintenance_date, status } = req.body;
 
     // Check if ship exists
     const [existing] = await db.query('SELECT * FROM ships WHERE id = ?', [id]);
@@ -141,7 +141,7 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
       }
     }
 
-    const image_url = req.file ? `/uploads/${req.file.filename}` : existing[0].image_url;
+    const image_url = req.file ? `/uploads/ship/${req.file.filename}` : existing[0].image_url;
 
     const updateFields = [];
     const updateValues = [];
@@ -157,6 +157,10 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
     if (type) {
       updateFields.push('type = ?');
       updateValues.push(type);
+    }
+    if (category_id !== undefined) {
+      updateFields.push('category_id = ?');
+      updateValues.push(category_id || null);
     }
     if (capacity_tons) {
       updateFields.push('capacity_tons = ?');

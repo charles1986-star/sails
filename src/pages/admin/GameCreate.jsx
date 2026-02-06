@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -11,9 +11,23 @@ const API_URL = "http://localhost:5000/api/admin";
 export default function GameCreate() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState({ message: "", type: "" });
-  const [formData, setFormData] = useState({ title: "", category: "", price: "", description: "", status: "active" });
+  const [formData, setFormData] = useState({ title: "", category_id: "", price: "", description: "", status: "active" });
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/categories`, { headers: getAuthHeader() });
+      setCategories(res?.data?.data || []);
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+    }
+  };
 
   if (!user || user.role !== "admin") {
     navigate("/");
@@ -30,10 +44,10 @@ export default function GameCreate() {
     try {
       const headers = getAuthHeader();
       await axios.post(`${API_URL}/games`, formData, { headers });
-      setNotice({ message: "Game created", type: "success" });
+      setNotice({ message: "Game created successfully", type: "success" });
       setTimeout(() => navigate('/admin/games'), 800);
     } catch (err) {
-      setNotice({ message: err.response?.data?.msg || "Failed to create", type: "error" });
+      setNotice({ message: err.response?.data?.msg || "Failed to create game", type: "error" });
     }
     setLoading(false);
   };
@@ -48,11 +62,37 @@ export default function GameCreate() {
 
         <div className="admin-form">
           <form onSubmit={handleSubmit}>
-            <input placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-            <input placeholder="Category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
-            <input type="number" step="0.01" placeholder="Price" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
-            <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
+            <input 
+              placeholder="Title" 
+              value={formData.title} 
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
+              required 
+            />
+            <select 
+              value={formData.category_id} 
+              onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+            >
+              <option value="">Select Category (Optional)</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            <input 
+              type="number" 
+              step="0.01" 
+              placeholder="Price" 
+              value={formData.price} 
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })} 
+            />
+            <textarea 
+              placeholder="Description" 
+              value={formData.description} 
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+            />
+            <select 
+              value={formData.status} 
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>

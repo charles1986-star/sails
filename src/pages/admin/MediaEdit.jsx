@@ -12,9 +12,16 @@ export default function MediaEdit() {
   const navigate = useNavigate();
   const { id } = useParams();
   const user = useSelector((state) => state.auth.user);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState({ message: "", type: "" });
-  const [formData, setFormData] = useState({ title: "", media_type: "image", category: "", description: "", status: "active" });
+  const [formData, setFormData] = useState({ 
+    title: "", 
+    media_type: "image", 
+    category_id: "", 
+    description: "", 
+    status: "active" 
+  });
   const [file, setFile] = useState(null);
 
   useEffect(() => {
@@ -22,8 +29,18 @@ export default function MediaEdit() {
       navigate("/");
       return;
     }
+    loadCategories();
     loadMedia();
   }, [user, id, navigate]);
+
+  const loadCategories = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/categories`, { headers: getAuthHeader() });
+      setCategories(res?.data?.data || []);
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+    }
+  };
 
   const loadMedia = async () => {
     setLoading(true);
@@ -32,7 +49,7 @@ export default function MediaEdit() {
       const res = await axios.get(`${API_URL}/media/${id}`, { headers });
       setFormData(res.data.data || {});
     } catch (err) {
-      setNotice({ message: err.response?.data?.msg || "Failed to load", type: "error" });
+      setNotice({ message: err.response?.data?.msg || "Failed to load media", type: "error" });
     }
     setLoading(false);
   };
@@ -42,18 +59,21 @@ export default function MediaEdit() {
     setLoading(true);
     try {
       const headers = getAuthHeader();
+      const fd = new FormData();
       if (file) {
-        const fd = new FormData();
         fd.append("file", file);
-        Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
-        await axios.put(`${API_URL}/media/${id}`, fd, { headers });
-      } else {
-        await axios.put(`${API_URL}/media/${id}`, formData, { headers: { ...headers, "Content-Type": "application/json" } });
       }
-      setNotice({ message: "Media updated", type: "success" });
+      fd.append("title", formData.title);
+      fd.append("media_type", formData.media_type);
+      fd.append("category_id", formData.category_id || "");
+      fd.append("description", formData.description);
+      fd.append("status", formData.status);
+
+      await axios.put(`${API_URL}/media/${id}`, fd, { headers });
+      setNotice({ message: "Media updated successfully", type: "success" });
       setTimeout(() => navigate('/admin/media'), 800);
     } catch (err) {
-      setNotice({ message: err.response?.data?.msg || "Failed to update", type: "error" });
+      setNotice({ message: err.response?.data?.msg || "Failed to update media", type: "error" });
     }
     setLoading(false);
   };
@@ -68,16 +88,43 @@ export default function MediaEdit() {
 
         <div className="admin-form">
           <form onSubmit={handleSubmit}>
-            <input placeholder="Title" value={formData.title || ""} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-            <select value={formData.media_type || "image"} onChange={(e) => setFormData({ ...formData, media_type: e.target.value })}>
+            <input 
+              placeholder="Title" 
+              value={formData.title || ""} 
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
+              required 
+            />
+            <select 
+              value={formData.media_type || "image"} 
+              onChange={(e) => setFormData({ ...formData, media_type: e.target.value })}
+            >
               <option value="image">Image</option>
               <option value="video">Video</option>
               <option value="audio">Audio</option>
             </select>
-            <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-            <input placeholder="Category" value={formData.category || ""} onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
-            <textarea placeholder="Description" value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-            <select value={formData.status || "active"} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
+            <input 
+              type="file" 
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              accept="image/*,video/*,audio/*"
+            />
+            <select 
+              value={formData.category_id || ""} 
+              onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+            >
+              <option value="">Select Category (Optional)</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            <textarea 
+              placeholder="Description" 
+              value={formData.description || ""} 
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+            />
+            <select 
+              value={formData.status || "active"} 
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
