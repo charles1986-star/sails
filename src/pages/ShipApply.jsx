@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import shipsData from "../data/ships";
 import axios from "axios";
 import { addApplication } from "../redux/slices/applicationSlice";
+import { getAuthHeader } from "../utils/auth";
+import Notice from "../components/Notice";
 import "../styles/shipsearch.css";
+
 
 const API_URL = "http://localhost:5000/api/admin";
 
@@ -12,9 +15,11 @@ export default function ShipApply() {
   const { id } = useParams();
   const navigate = useNavigate();
   const shipsFromStore = useSelector((state) => state.ships.ships);
-  const ship = (shipsFromStore && shipsFromStore.length ? shipsFromStore : shipsData).find((s) => s.id === id);
+  const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
-
+  const [ship, setShip] = useState(null);
+  const [shipLoading, setShipLoading] = useState(true);
+  
   const [form, setForm] = useState({
     cargoType: "",
     weight: "",
@@ -29,10 +34,42 @@ export default function ShipApply() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(null);
+  const [notice, setNotice] = useState(null);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const editId = params.get("edit");
+
+  // Load ship from API or store
+  useEffect(() => {
+    const loadShip = async () => {
+      try {
+        if (shipsFromStore && shipsFromStore.length > 0) {
+          const foundShip = shipsFromStore.find((s) => s.id === parseInt(id));
+          if (foundShip) {
+            setShip(foundShip);
+            setShipLoading(false);
+            return;
+          }
+        }
+        
+        const res = await axios.get(`${API_URL}/ships/${id}`);
+        if (res?.data?.data) {
+          setShip(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load ship:", err);
+        const localShip = shipsData.find((s) => s.id === id);
+        if (localShip) {
+          setShip(localShip);
+        }
+      } finally {
+        setShipLoading(false);
+      }
+    };
+
+    loadShip();
+  }, [id, shipsFromStore]);
 
   useEffect(() => {
     if (!editId) return;
@@ -43,6 +80,16 @@ export default function ShipApply() {
     }
   }, [editId]);
 
+  if (shipLoading) {
+    return (
+      <div className="apply-page">
+        <div className="container">
+          <div className="no-results">Loading ship details...</div>
+        </div>
+      </div>
+    );
+  }
+
   if (!ship) return <div className="no-results">Ship not found.</div>;
 
   const handleChange = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
@@ -50,7 +97,13 @@ export default function ShipApply() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.cargoType || !form.weight || !form.contactName || !form.contactEmail) {
-      alert("Please fill required fields: cargo type, weight, name, email.");
+      setNotice({ type: "error", msg: "Please fill required fields: cargo type, weight, name, email." });
+      return;
+    }
+
+    if (!user || !user.id) {
+      setNotice({ type: "error", msg: "You must be logged in to apply." });
+      navigate('/login');
       return;
     }
 
@@ -58,45 +111,36 @@ export default function ShipApply() {
     try {
       const payload = {
         ship_id: ship.id,
-        ship_name: ship.name,
-        form,
-        status: "pending",
+        cargo_type: form.cargoType,
+        cargo_weight: form.weight,
+        weight_unit: form.weightUnit,
+        preferred_loading_date: form.preferredLoadingDate,
+        preferred_arrival_date: form.preferredArrivalDate,
+        contact_name: form.contactName,
+        contact_email: form.contactEmail,
+        contact_phone: form.contactPhone,
+        message: form.message,
       };
-      const res = await axios.post(`${API_URL}/applications`, payload);
-      const created = res?.data?.data || { id: `app_${Date.now()}`, shipId: ship.id, shipName: ship.name, createdAt: new Date().toISOString(), status: 'pending', form };
-      // add to user's applications in store
-      dispatch(addApplication(created));
-      setSubmitted(created);
+      
+      const res = await axios.post(`${API_URL}/applications`, payload, { headers: getAuthHeader() });
+      
+      if (res?.data?.data) {
+        setSubmitted(res.data.data);
+        dispatch(addApplication(res.data.data));
+        setNotice({ type: "success", msg: "Application submitted successfully!" });
+        setTimeout(() => navigate('/applications'), 2000);
+      }
     } catch (err) {
       console.error(err);
-      // fallback to localStorage if API fails
-      const apps = JSON.parse(localStorage.getItem("applications") || "[]");
-      if (editId) {
-        const next = apps.map((a) => (a.id === editId ? { ...a, form, createdAt: a.createdAt } : a));
-        localStorage.setItem("applications", JSON.stringify(next));
-        const updated = next.find((a) => a.id === editId);
-        setSubmitted(updated);
-      } else {
-        const app = {
-          id: `app_${Date.now()}`,
-          shipId: ship.id,
-          shipName: ship.name,
-          createdAt: new Date().toISOString(),
-          status: "pending",
-          form,
-        };
-        apps.unshift(app);
-        localStorage.setItem("applications", JSON.stringify(apps));
-        dispatch(addApplication(app));
-        setSubmitted(app);
-      }
+      const errorMsg = err.response?.data?.msg || "Failed to submit application";
+      setNotice({ type: "error", msg: errorMsg });
     } finally {
       setSubmitting(false);
     }
   };
-
   return (
     <div className="apply-page">
+      {notice && <Notice type={notice.type} msg={notice.msg} />}
       <div className="container detail-grid">
         <div className="detail-left">
           <div className="detail-card card-shadow">
@@ -104,7 +148,7 @@ export default function ShipApply() {
               <div>
                 <h1>Apply to {ship.name}</h1>
                 <div className="imo">IMO: {ship.imo}</div>
-                <div className="detail-sub">{ship.type} • {ship.startPort} → {ship.endPort}</div>
+                <div className="detail-sub">{ship.type} • {ship.current_port || 'Port'} → {ship.next_port || 'Port'}</div>
               </div>
               <div className="detail-meta">
                 <button className="back-link" onClick={() => navigate(-1)}>← Back</button>
@@ -198,24 +242,23 @@ export default function ShipApply() {
         <aside className="detail-right">
           <div className="sticky-card card-shadow">
             <div className="owner">
-              <div className="avatar-small">{ship.ownerCompany.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+              <div className="avatar-small">{(ship.ship_owner || ship.ownerCompany || 'SHIP').substring(0, 2).toUpperCase()}</div>
               <div>
-                <div className="owner-name">{ship.ownerCompany}</div>
-                <div className="owner-meta">{ship.verified ? 'Verified operator' : 'Unverified'}</div>
+                <div className="owner-name">{ship.ship_owner || ship.ownerCompany || 'Ship Owner'}</div>
               </div>
             </div>
 
             <div className="ship-summary">
               <h4>{ship.name}</h4>
               <div className="imo">IMO: {ship.imo}</div>
-              <div className="detail-sub">{ship.type} • {ship.startPort} → {ship.endPort}</div>
-              <div className="ship-meta">Capacity: {ship.capacityTons.toLocaleString()} t • ETA {Math.floor(ship.etaHours/24)}d</div>
+              <div className="detail-sub">{ship.type} • {ship.current_port || 'Port'} → {ship.next_port || 'Port'}</div>
+              <div className="ship-meta">Capacity: {(ship.capacity_tons || ship.capacityTons)?.toLocaleString()} t</div>
             </div>
 
             <div style={{marginTop:12}}>
               <strong>Contact</strong>
-              <div className="owner-meta">Owner: {ship.ownerCompany}</div>
-              <div className="owner-meta">Email: contact@{ship.ownerCompany.split(' ').join('').toLowerCase()}.com</div>
+              <div className="owner-meta">Owner: {ship.ship_owner || ship.ownerCompany || 'Ship Owner'}</div>
+              <div className="owner-meta">Email: contact@shipowner.com</div>
             </div>
 
           </div>

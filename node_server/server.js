@@ -14,6 +14,7 @@ import mediaRouter from './routes/media.js';
 import articlesRouter from './routes/articles.js';
 import shipsRouter from './routes/ships.js';
 import gamesRouter from './routes/games.js';
+import categoriesRouter from './routes/categories.js';
 
 // Create Express app
 const app = express();
@@ -173,6 +174,18 @@ async function initDatabase() {
       INDEX idx_ship_id (ship_id),
       INDEX idx_status (status),
       INDEX idx_created_at (created_at)
+    )`,
+    `CREATE TABLE IF NOT EXISTS categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      parent_id INT,
+      description TEXT,
+      status ENUM('active', 'inactive') DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,
+      INDEX idx_status (status),
+      INDEX idx_parent_id (parent_id)
     )`
   ];
 
@@ -188,7 +201,7 @@ async function initDatabase() {
 initDatabase();
 
 // ==================== AUTHENTICATION ====================
-
+app.use("/uploads", express.static("uploads"));
 // SIGNUP
 app.post("/api/signup", async (req, res) => {
   try {
@@ -455,6 +468,7 @@ app.use('/api/admin', mediaRouter);
 app.use('/api/admin', articlesRouter);
 app.use('/api/admin', shipsRouter);
 app.use('/api/admin', gamesRouter);
+app.use('/api/admin', categoriesRouter);
 
 // Start server
 const PORT = process.env.PORT || 5000;

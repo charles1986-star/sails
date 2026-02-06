@@ -1,14 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import shipsData from "../data/ships";
+import axios from "axios";
 import "../styles/shipsearch.css";
 // import defaultShipImage from "../assets/ship-default.jpg"; // add a default ship image
+
+const API_URL = "http://localhost:5000/api/admin";
 
 export default function ShipDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const ship = shipsData.find((s) => s.id === id);
+  const shipsFromStore = useSelector((state) => state.ships.ships);
+  const [ship, setShip] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [proposal, setProposal] = useState("");
+
+  useEffect(() => {
+    const loadShip = async () => {
+      try {
+        // Try to get from Redux store first
+        if (shipsFromStore && shipsFromStore.length > 0) {
+          const foundShip = shipsFromStore.find((s) => s.id === parseInt(id));
+          if (foundShip) {
+            setShip(foundShip);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // If not in store, fetch from API
+        const res = await axios.get(`${API_URL}/ships/${id}`);
+        if (res?.data?.data) {
+          setShip(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load ship:", err);
+        // Fallback to local data
+        const localShip = shipsData.find((s) => s.id === id);
+        if (localShip) {
+          setShip(localShip);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadShip();
+  }, [id, shipsFromStore]);
+
+  if (loading) {
+    return (
+      <div className="ship-detail-page">
+        <div className="container">
+          <div className="no-results">Loading ship details...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!ship) {
     return (
@@ -60,15 +109,14 @@ export default function ShipDetail() {
               <p>{ship.description || "No description provided."}</p>
             </section>
 
-            {/* Details */}
             <section className="card-section">
               <h3>Details</h3>
               <ul>
-                <li>Distance: {ship.distance.toLocaleString()} km</li>
-                <li>ETA: {Math.floor(ship.etaHours / 24)}d {ship.etaHours % 24}h</li>
-                <li>Capacity: {ship.capacityTons.toLocaleString()} t</li>
-                <li>Available from: {ship.availabilityDate}</li>
-                <li>Estimated duration: {ship.estimatedDurationDays} days</li>
+                <li>Capacity: {(ship.capacity_tons || ship.capacityTons)?.toLocaleString()} t</li>
+                <li>Type: {ship.type}</li>
+                <li>Current Port: {ship.current_port || 'N/A'}</li>
+                <li>Next Port: {ship.next_port || 'N/A'}</li>
+                {ship.last_maintenance_date && <li>Last Maintenance: {ship.last_maintenance_date}</li>}
               </ul>
             </section>
 
@@ -89,10 +137,9 @@ export default function ShipDetail() {
           <div className="sticky-card">
             <div className="owner-card">
               <div className="owner-info">
-                <div className="avatar-small">{ship.ownerCompany.split(' ').map(w => w[0]).slice(0, 2).join('')}</div>
+                <div className="avatar-small">{(ship.ship_owner || ship.ownerCompany || 'SHIP').substring(0, 2).toUpperCase()}</div>
                 <div className="owner-meta">
-                  <div className="owner-name">{ship.ownerCompany}</div>
-                  <div>Verified: {ship.verified ? '✔' : '✖'}</div>
+                  <div className="owner-name">{ship.ship_owner || ship.ownerCompany || 'Ship Owner'}</div>
                 </div>
               </div>
 

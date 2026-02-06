@@ -110,7 +110,7 @@ export default function Applications() {
               <h3>Application {selected.id}</h3>
               <p><strong>Ship:</strong> {selected.shipName}</p>
               <p><strong>Status:</strong> {selected.status}</p>
-              <p><strong>Submitted:</strong> {new Date(selected.createdAt).toLocaleString()}</p>
+              <p><strong>Submitted:</strong> {new Date(selected.createdAt)?.toLocaleString()?? 0}</p>
               <h4>Message</h4>
               <p>{selected.form.message || '—'}</p>
               <div className="form-actions">

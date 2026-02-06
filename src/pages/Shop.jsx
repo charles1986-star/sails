@@ -2,7 +2,10 @@ import { useState, useMemo, useEffect } from "react";
 import ProductCard from "../components/ProductCard";
 import Sidebar from "../components/Sidebar";
 import products from "../data/products";
+import axios from "axios";
 import "../styles/shop.css";
+
+const API_URL = "http://localhost:5000/api/admin";
 
 export default function Shop({ onBuyNow, onAddToCart }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -12,10 +15,23 @@ export default function Shop({ onBuyNow, onAddToCart }) {
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [levelFilter, setLevelFilter] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [categories, setCategories] = useState([]);
 
   const PAGE_SIZE = 6;
 
-  
+  // Load categories from API
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/categories`);
+        setCategories(res?.data?.data || []);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+        // Keep local categories if API fails
+      }
+    };
+    loadCategories();
+  }, []);
 
   /** -----------------------------
    * FILTER + SORT (Upwork order)

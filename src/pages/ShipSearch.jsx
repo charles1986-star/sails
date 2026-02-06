@@ -19,44 +19,68 @@ export default function ShipSearch() {
   const shipsFromStore = useSelector((state) => state.ships.ships);
 
   useEffect(() => {
-    // try load public ships from API; if fails, fall back to bundled data
+    // Load ships from API; if fails, fall back to bundled data
     const load = async () => {
       try {
         const res = await axios.get(`${API_URL}/ships`);
-        if (res?.data?.data) dispatch(setShips(res.data.data));
+        if (res?.data?.data) {
+          dispatch(setShips(res.data.data));
+        }
       } catch (err) {
-        // keep local shipsData
+        console.error("Failed to load ships from API:", err);
+        // keep local shipsData as fallback
+        if (!shipsFromStore || shipsFromStore.length === 0) {
+          dispatch(setShips(shipsData));
+        }
       }
     };
-    if (!shipsFromStore || shipsFromStore.length === 0) load();
-  }, [dispatch]);
+    
+    if (!shipsFromStore || shipsFromStore.length === 0) {
+      load();
+    }
+  }, [dispatch, shipsFromStore]);
 
   const sourceShips = (shipsFromStore && shipsFromStore.length) ? shipsFromStore : shipsData;
 
-  const ports = useMemo(() => Array.from(new Set(sourceShips.flatMap((s) => [s.startPort, s.endPort]))), [sourceShips]);
+  // Get unique ports and types - handle both API and local data formats
+  const ports = useMemo(() => {
+    const portSet = new Set();
+    sourceShips.forEach((s) => {
+      if (s.current_port) portSet.add(s.current_port);
+      if (s.next_port) portSet.add(s.next_port);
+      if (s.startPort) portSet.add(s.startPort);
+      if (s.endPort) portSet.add(s.endPort);
+    });
+    return Array.from(portSet);
+  }, [sourceShips]);
+
   const typesList = useMemo(() => Array.from(new Set(sourceShips.map((s) => s.type))), [sourceShips]);
 
   const filtered = useMemo(() => {
     let out = sourceShips.filter((s) => {
-      if (filters.startPort && s.startPort !== filters.startPort) return false;
-      if (filters.endPort && s.endPort !== filters.endPort) return false;
-      if (filters.maxDistance && s.distance > filters.maxDistance) return false;
+      // Handle both API and local data formats
+      const start = s.current_port || s.startPort || '';
+      const end = s.next_port || s.endPort || '';
+      
+      if (filters.startPort && start !== filters.startPort) return false;
+      if (filters.endPort && end !== filters.endPort) return false;
       if (filters.types && filters.types.length && !filters.types.includes(s.type)) return false;
-      if (filters.availableAfter && new Date(s.availabilityDate) < new Date(filters.availableAfter)) return false;
-      if (filters.minCapacity && s.capacityTons < filters.minCapacity) return false;
+      if (filters.minCapacity && (s.capacity_tons || s.capacityTons || 0) < filters.minCapacity) return false;
+      
       if (searchText) {
         const q = searchText.toLowerCase();
-        const hay = `${s.name} ${s.type} ${s.startPort} ${s.endPort} ${s.ownerCompany}`.toLowerCase();
+        const hay = `${s.name} ${s.type} ${start} ${end} ${s.ship_owner || s.ownerCompany || ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
 
-    if (sortBy === "distance") out = out.slice().sort((a, b) => a.distance - b.distance);
-    if (sortBy === "newest") out = out.slice().sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
+    if (sortBy === "newest") {
+      out = out.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
 
     return out;
-  }, [filters, searchText, sortBy]);
+  }, [filters, searchText, sortBy, sourceShips]);
 
   const navigate = useNavigate();
 

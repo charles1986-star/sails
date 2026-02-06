@@ -54,6 +54,9 @@ import AdminShips from "./pages/admin/Ships";
 import AdminGames from "./pages/admin/Games";
 import GameCreate from "./pages/admin/GameCreate";
 import GameEdit from "./pages/admin/GameEdit";
+import AdminCategories from "./pages/admin/Categories";
+import CategoryCreate from "./pages/admin/CategoryCreate";
+import CategoryEdit from "./pages/admin/CategoryEdit";
 import AdminLayout from "./components/AdminLayout";
 import ShipCreate from "./pages/admin/ShipCreate";
 import ShipEdit from "./pages/admin/ShipEdit";
@@ -179,6 +182,9 @@ function App() {
           <Route path="ships" element={<AdminShips />} />
           <Route path="ships/new" element={<ShipCreate />} />
           <Route path="ships/:id/edit" element={<ShipEdit />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="categories/create" element={<CategoryCreate />} />
+          <Route path="categories/edit/:id" element={<CategoryEdit />} />
           <Route path="games" element={<AdminGames />} />
           <Route path="games/new" element={<GameCreate />} />
           <Route path="games/:id/edit" element={<GameEdit />} />
