@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { getAuthHeader } from "../../utils/auth";
 import Notice from "../../components/Notice";
 import axios from "axios";
+import Pagination from "../../components/Pagination";
 import "../../styles/admin.css";
 
 const API_URL = "http://localhost:5000/api/admin";
@@ -14,8 +15,8 @@ export default function Media() {
   const [notice, setNotice] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [media, setMedia] = useState([]);
-  const [formData, setFormData] = useState({});
-  const [editingId, setEditingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -40,38 +41,6 @@ export default function Media() {
     setLoading(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.title || !formData.media_type) {
-      setNotice({
-        message: "Title and media type are required",
-        type: "error",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const headers = getAuthHeader();
-      if (editingId) {
-        await axios.put(`${API_URL}/media/${editingId}`, formData, { headers });
-        setNotice({ message: "Media updated successfully!", type: "success" });
-      } else {
-        await axios.post(`${API_URL}/media`, formData, { headers });
-        setNotice({ message: "Media created successfully!", type: "success" });
-      }
-      setFormData({});
-      setEditingId(null);
-      setTimeout(() => loadMedia(), 1000);
-    } catch (error) {
-      setNotice({
-        message: error.response?.data?.msg || "Failed to save media",
-        type: "error",
-      });
-    }
-    setLoading(false);
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     setLoading(true);
@@ -79,7 +48,7 @@ export default function Media() {
       const headers = getAuthHeader();
       await axios.delete(`${API_URL}/media/${id}`, { headers });
       setNotice({ message: "Media deleted successfully!", type: "success" });
-      setTimeout(() => loadMedia(), 1000);
+      setTimeout(() => loadMedia(), 800);
     } catch (error) {
       setNotice({
         message: error.response?.data?.msg || "Failed to delete",
@@ -89,16 +58,8 @@ export default function Media() {
     setLoading(false);
   };
 
-  const handleEdit = (item) => {
-    setEditingId(item.id);
-    setFormData(item);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleCancel = () => {
-    setFormData({});
-    setEditingId(null);
-  };
+  const totalPages = Math.ceil(media.length / itemsPerPage);
+  const paginated = media.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="admin-page">
@@ -109,80 +70,11 @@ export default function Media() {
       />
 
       <div className="admin-container">
-        <h1>Manage Media</h1>
-
-        <div className="admin-form">
-          <h3>{editingId ? "Edit Media" : "Add New Media"}</h3>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Title"
-              value={formData.title || ""}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              disabled={loading}
-              required
-            />
-            <select
-              value={formData.media_type || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, media_type: e.target.value })
-              }
-              disabled={loading}
-              required
-            >
-              <option value="">Select Media Type</option>
-              <option value="image">Image</option>
-              <option value="video">Video</option>
-              <option value="audio">Audio</option>
-            </select>
-            <input
-              type="text"
-              placeholder="File URL"
-              value={formData.file_url || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, file_url: e.target.value })
-              }
-              disabled={loading}
-            />
-            <input
-              type="text"
-              placeholder="Category"
-              value={formData.category || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              disabled={loading}
-            />
-            <textarea
-              placeholder="Description"
-              value={formData.description || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              disabled={loading}
-            ></textarea>
-            <select
-              value={formData.status || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, status: e.target.value })
-              }
-              disabled={loading}
-            >
-              <option value="">Select Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-            <div className="form-buttons">
-              <button type="submit" disabled={loading}>
-                {loading ? "Saving..." : editingId ? "Update" : "Add"}
-              </button>
-              {editingId && (
-                <button type="button" onClick={handleCancel} disabled={loading}>
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
+        <div className="admin-header-row">
+          <h1>Media</h1>
+          <div>
+            <button className="btn-primary" onClick={() => navigate('/admin/media/new')}>Add Media</button>
+          </div>
         </div>
 
         <div className="admin-table-container">
@@ -198,14 +90,12 @@ export default function Media() {
               </tr>
             </thead>
             <tbody>
-              {media.length === 0 ? (
+              {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center">
-                    No media found
-                  </td>
+                  <td colSpan="6" className="text-center">No media found</td>
                 </tr>
               ) : (
-                media.map((item) => (
+                paginated.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.title}</td>
@@ -213,26 +103,16 @@ export default function Media() {
                     <td>{item.category || "-"}</td>
                     <td>{item.status}</td>
                     <td>
-                      <button
-                        className="btn-edit"
-                        onClick={() => handleEdit(item)}
-                        disabled={loading}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn-delete"
-                        onClick={() => handleDelete(item.id)}
-                        disabled={loading}
-                      >
-                        Delete
-                      </button>
+                      <button className="btn-edit" onClick={() => navigate(`/admin/media/${item.id}/edit`)} disabled={loading}>Edit</button>
+                      <button className="btn-delete" onClick={() => handleDelete(item.id)} disabled={loading}>Delete</button>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
+
+          <Pagination page={currentPage} totalPages={totalPages} onChange={(p) => setCurrentPage(p)} />
         </div>
       </div>
     </div>

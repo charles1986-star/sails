@@ -13,7 +13,7 @@ const categories = [
 export default function Categories() {
   return (
     <section className="categories">
-      <div className="container">
+      <div className="landing-container">
         <h2>Browse talent by category</h2>
 
         <div className="category-grid">

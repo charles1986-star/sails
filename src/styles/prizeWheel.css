@@ -1,0 +1,110 @@
+/* Floating Icon */
+.lottery-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #0a66c2;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 18px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+}
+.fab-label { font-size: 14px; }
+
+/* Modal */
+.wheel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.wheel-modal {
+  background: #fff;
+  width: 420px;
+  border-radius: 16px;
+  padding: 20px;
+  animation: pop .25s ease;
+}
+@keyframes pop { from { transform: scale(.95); opacity: 0; } }
+
+.wheel-header {
+  text-align: center;
+  position: relative;
+}
+.close-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* Wheel */
+.wheel-container { text-align: center; margin-top: 16px; }
+.wheel-wrapper {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: auto;
+}
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 10px solid #e6edf5;
+  transition: transform 4s cubic-bezier(.17,.67,.17,1);
+  position: relative;
+}
+.wheel-segment {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  transform-origin: 100% 100%;
+}
+.wheel-segment span {
+  position: absolute;
+  right: -8px;
+  top: 20px;
+  font-size: 13px;
+  color: #0a2b4c;
+}
+
+/* Pointer */
+.wheel-pointer {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #f59e0b;
+}
+
+/* Button */
+.spin-btn {
+  margin-top: 16px;
+  background: #0a66c2;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.spin-btn:disabled { opacity: .6; }
+
+/* Result */
+.wheel-result {
+  margin-top: 12px;
+  font-weight: 600;
+  color: #0a66c2;
+}

@@ -1,20 +1,43 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import ShipFilterPanel from "../components/ShipFilterPanel";
 import ShipList from "../components/ShipList";
 import shipsData from "../data/ships";
+import { setShips } from "../redux/slices/shipSlice";
+import axios from "axios";
 import "../styles/shipsearch.css";
+
+const API_URL = "http://localhost:5000/api/admin";
 
 export default function ShipSearch() {
   const [filters, setFilters] = useState({ startPort: "", endPort: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });
   const [searchText, setSearchText] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
 
-  const ports = useMemo(() => Array.from(new Set(shipsData.flatMap((s) => [s.startPort, s.endPort]))), []);
-  const typesList = useMemo(() => Array.from(new Set(shipsData.map((s) => s.type))), []);
+  const dispatch = useDispatch();
+  const shipsFromStore = useSelector((state) => state.ships.ships);
+
+  useEffect(() => {
+    // try load public ships from API; if fails, fall back to bundled data
+    const load = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/ships`);
+        if (res?.data?.data) dispatch(setShips(res.data.data));
+      } catch (err) {
+        // keep local shipsData
+      }
+    };
+    if (!shipsFromStore || shipsFromStore.length === 0) load();
+  }, [dispatch]);
+
+  const sourceShips = (shipsFromStore && shipsFromStore.length) ? shipsFromStore : shipsData;
+
+  const ports = useMemo(() => Array.from(new Set(sourceShips.flatMap((s) => [s.startPort, s.endPort]))), [sourceShips]);
+  const typesList = useMemo(() => Array.from(new Set(sourceShips.map((s) => s.type))), [sourceShips]);
 
   const filtered = useMemo(() => {
-    let out = shipsData.filter((s) => {
+    let out = sourceShips.filter((s) => {
       if (filters.startPort && s.startPort !== filters.startPort) return false;
       if (filters.endPort && s.endPort !== filters.endPort) return false;
       if (filters.maxDistance && s.distance > filters.maxDistance) return false;

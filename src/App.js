@@ -9,6 +9,7 @@ import Games from "./pages/Games";
 import GameDetail from "./pages/GameDetail";
 import Footer from "./components/Footer";
 import ScorePurchase from "./components/ScorePurchase";
+import LotteryIcon from "./components/LotteryIcon";
 
 import CartPage from "./pages/CartPage";
 import ProductModal from "./components/ProductModal";
@@ -29,16 +30,33 @@ import ScrollToTop from "./components/ScrollToTop";
 import { initializeAuth, logoutUser } from "./utils/auth";
 import { logout, updateUserScore } from "./redux/slices/authSlice";
 
+
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminTransactions from "./pages/admin/Transactions";
+import TransactionCreate from "./pages/admin/TransactionCreate";
+import TransactionEdit from "./pages/admin/TransactionEdit";
 import AdminBooks from "./pages/admin/Books";
 import AdminMedia from "./pages/admin/Media";
+import MediaCreate from "./pages/admin/MediaCreate";
+import MediaEdit from "./pages/admin/MediaEdit";
 import AdminArticles from "./pages/admin/Articles";
+import ArticleCreate from "./pages/admin/ArticleCreate";
+import ArticleEdit from "./pages/admin/ArticleEdit";
+import BookCreate from "./pages/admin/BookCreate";
+import BookEdit from "./pages/admin/BookEdit";
 import AdminApplications from "./pages/admin/Applications";
+import AdminApplicationEdit from "./pages/admin/ApplicationEdit";
 import AdminShops from "./pages/admin/Shops";
+import ShopCreate from "./pages/admin/ShopCreate";
+import ShopEdit from "./pages/admin/ShopEdit";
 import AdminShips from "./pages/admin/Ships";
 import AdminGames from "./pages/admin/Games";
+import GameCreate from "./pages/admin/GameCreate";
+import GameEdit from "./pages/admin/GameEdit";
+import AdminLayout from "./components/AdminLayout";
+import ShipCreate from "./pages/admin/ShipCreate";
+import ShipEdit from "./pages/admin/ShipEdit";
 
 
 function App() {
@@ -139,15 +157,32 @@ function App() {
         <Route path="/admin/games" element={<ProtectedRoute element={<AdminGames />} requiredRole="admin" />} /> */}
 
 
-        <Route path="/admin/dashboard" element={<ProtectedRoute element={<AdminDashboard />} requiredRole="admin" />} />
-        <Route path="/admin/applications" element={<ProtectedRoute element={<AdminApplications />} requiredRole="admin" />} />
-        <Route path="/admin/transactions" element={<ProtectedRoute element={<AdminTransactions />} requiredRole="admin" />} />
-        <Route path="/admin/books" element={<ProtectedRoute element={<AdminBooks />} requiredRole="admin" />} />
-        <Route path="/admin/media" element={<ProtectedRoute element={<AdminMedia />} requiredRole="admin" />} />
-        <Route path="/admin/articles" element={<ProtectedRoute element={<AdminArticles />} requiredRole="admin" />} />
-        <Route path="/admin/shops" element={<ProtectedRoute element={<AdminShops />} requiredRole="admin" />} />
-        <Route path="/admin/ships" element={<ProtectedRoute element={<AdminShips />} requiredRole="admin" />} />
-        <Route path="/admin/games" element={<ProtectedRoute element={<AdminGames />} requiredRole="admin" />} />
+        <Route path="/admin/*" element={<ProtectedRoute element={<AdminLayout />} requiredRole="admin" />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="applications" element={<AdminApplications />} />
+          <Route path="applications/:id/edit" element={<AdminApplicationEdit />} />
+          <Route path="transactions" element={<AdminTransactions />} />
+          <Route path="transactions/new" element={<TransactionCreate />} />
+          <Route path="transactions/:id/edit" element={<TransactionEdit />} />
+          <Route path="books" element={<AdminBooks />} />
+          <Route path="books/new" element={<BookCreate />} />
+          <Route path="books/:id/edit" element={<BookEdit />} />
+          <Route path="media" element={<AdminMedia />} />
+          <Route path="media/new" element={<MediaCreate />} />
+          <Route path="media/:id/edit" element={<MediaEdit />} />
+          <Route path="articles" element={<AdminArticles />} />
+          <Route path="articles/new" element={<ArticleCreate />} />
+          <Route path="articles/:id/edit" element={<ArticleEdit />} />
+          <Route path="shops" element={<AdminShops />} />
+          <Route path="shops/new" element={<ShopCreate />} />
+          <Route path="shops/:id/edit" element={<ShopEdit />} />
+          <Route path="ships" element={<AdminShips />} />
+          <Route path="ships/new" element={<ShipCreate />} />
+          <Route path="ships/:id/edit" element={<ShipEdit />} />
+          <Route path="games" element={<AdminGames />} />
+          <Route path="games/new" element={<GameCreate />} />
+          <Route path="games/:id/edit" element={<GameEdit />} />
+        </Route>
       </Routes>
 
       {selectedProduct && (
@@ -167,7 +202,7 @@ function App() {
       <Notice message={notice} onClose={() => setNotice(null)} />
       <ScrollToTop />
       <Footer />
-     
+      <LotteryIcon />
     </BrowserRouter>
   );
 }

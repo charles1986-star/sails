@@ -25,6 +25,11 @@
   );
 }
 
+.landing-hero-title{
+  color:white;
+  opacity: 0.9;
+}
+
 /* Content */
 .hero-content {
   position: relative;

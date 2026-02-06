@@ -43,7 +43,7 @@ const tiles = [
 export default function LandingSections() {
   return (
     <section className="landing-sections">
-      <div className="container">
+      <div className="landing-container">
         <div className="landing-intro">
           <h2>Everything for modern sail transport</h2>
           <p className="lead">Find transactions, parts, media, guides and exchange opportunities — all in one place.</p>

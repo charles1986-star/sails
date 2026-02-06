@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { getAuthHeader } from "../../utils/auth";
 import Notice from "../../components/Notice";
 import axios from "axios";
+import Pagination from "../../components/Pagination";
 import "../../styles/admin.css";
 
 const API_URL = "http://localhost:5000/api/admin";
@@ -14,8 +15,8 @@ export default function Articles() {
   const [notice, setNotice] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [articles, setArticles] = useState([]);
-  const [formData, setFormData] = useState({});
-  const [editingId, setEditingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -40,40 +41,6 @@ export default function Articles() {
     setLoading(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.title || !formData.content) {
-      setNotice({
-        message: "Title and content are required",
-        type: "error",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const headers = getAuthHeader();
-      if (editingId) {
-        await axios.put(`${API_URL}/articles/${editingId}`, formData, {
-          headers,
-        });
-        setNotice({ message: "Article updated successfully!", type: "success" });
-      } else {
-        await axios.post(`${API_URL}/articles`, formData, { headers });
-        setNotice({ message: "Article created successfully!", type: "success" });
-      }
-      setFormData({});
-      setEditingId(null);
-      setTimeout(() => loadArticles(), 1000);
-    } catch (error) {
-      setNotice({
-        message: error.response?.data?.msg || "Failed to save article",
-        type: "error",
-      });
-    }
-    setLoading(false);
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     setLoading(true);
@@ -81,7 +48,7 @@ export default function Articles() {
       const headers = getAuthHeader();
       await axios.delete(`${API_URL}/articles/${id}`, { headers });
       setNotice({ message: "Article deleted successfully!", type: "success" });
-      setTimeout(() => loadArticles(), 1000);
+      setTimeout(() => loadArticles(), 800);
     } catch (error) {
       setNotice({
         message: error.response?.data?.msg || "Failed to delete",
@@ -91,16 +58,8 @@ export default function Articles() {
     setLoading(false);
   };
 
-  const handleEdit = (item) => {
-    setEditingId(item.id);
-    setFormData(item);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleCancel = () => {
-    setFormData({});
-    setEditingId(null);
-  };
+  const totalPages = Math.ceil(articles.length / itemsPerPage);
+  const paginated = articles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="admin-page">
@@ -111,60 +70,11 @@ export default function Articles() {
       />
 
       <div className="admin-container">
-        <h1>Manage Articles</h1>
-
-        <div className="admin-form">
-          <h3>{editingId ? "Edit Article" : "Add New Article"}</h3>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Title"
-              value={formData.title || ""}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              disabled={loading}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Category"
-              value={formData.category || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              disabled={loading}
-            />
-            <textarea
-              placeholder="Content"
-              value={formData.content || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, content: e.target.value })
-              }
-              disabled={loading}
-              rows="6"
-              required
-            ></textarea>
-            <select
-              value={formData.status || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, status: e.target.value })
-              }
-              disabled={loading}
-            >
-              <option value="">Select Status</option>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-            <div className="form-buttons">
-              <button type="submit" disabled={loading}>
-                {loading ? "Saving..." : editingId ? "Update" : "Add"}
-              </button>
-              {editingId && (
-                <button type="button" onClick={handleCancel} disabled={loading}>
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
+        <div className="admin-header-row">
+          <h1>Articles</h1>
+          <div>
+            <button className="btn-primary" onClick={() => navigate('/admin/articles/new')}>Add Article</button>
+          </div>
         </div>
 
         <div className="admin-table-container">
@@ -181,14 +91,12 @@ export default function Articles() {
               </tr>
             </thead>
             <tbody>
-              {articles.length === 0 ? (
+              {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center">
-                    No articles found
-                  </td>
+                  <td colSpan="7" className="text-center">No articles found</td>
                 </tr>
               ) : (
-                articles.map((item) => (
+                paginated.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.title}</td>
@@ -197,26 +105,16 @@ export default function Articles() {
                     <td>{item.status}</td>
                     <td>{item.views}</td>
                     <td>
-                      <button
-                        className="btn-edit"
-                        onClick={() => handleEdit(item)}
-                        disabled={loading}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn-delete"
-                        onClick={() => handleDelete(item.id)}
-                        disabled={loading}
-                      >
-                        Delete
-                      </button>
+                      <button className="btn-edit" onClick={() => navigate(`/admin/articles/${item.id}/edit`)} disabled={loading}>Edit</button>
+                      <button className="btn-delete" onClick={() => handleDelete(item.id)} disabled={loading}>Delete</button>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
+
+          <Pagination page={currentPage} totalPages={totalPages} onChange={(p) => setCurrentPage(p)} />
         </div>
       </div>
     </div>

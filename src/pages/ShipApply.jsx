@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import shipsData from "../data/ships";
+import axios from "axios";
+import { addApplication } from "../redux/slices/applicationSlice";
 import "../styles/shipsearch.css";
+
+const API_URL = "http://localhost:5000/api/admin";
 
 export default function ShipApply() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const ship = shipsData.find((s) => s.id === id);
+  const shipsFromStore = useSelector((state) => state.ships.ships);
+  const ship = (shipsFromStore && shipsFromStore.length ? shipsFromStore : shipsData).find((s) => s.id === id);
+  const dispatch = useDispatch();
 
   const [form, setForm] = useState({
     cargoType: "",
@@ -40,7 +47,7 @@ export default function ShipApply() {
 
   const handleChange = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.cargoType || !form.weight || !form.contactName || !form.contactEmail) {
       alert("Please fill required fields: cargo type, weight, name, email.");
@@ -48,24 +55,43 @@ export default function ShipApply() {
     }
 
     setSubmitting(true);
-    const apps = JSON.parse(localStorage.getItem("applications") || "[]");
-    if (editId) {
-      const next = apps.map(a => a.id === editId ? { ...a, form, createdAt: a.createdAt } : a);
-      localStorage.setItem("applications", JSON.stringify(next));
-      const updated = next.find(a=>a.id===editId);
-      setTimeout(()=>{ setSubmitting(false); setSubmitted(updated); }, 400);
-    } else {
-      const app = {
-        id: `app_${Date.now()}`,
-        shipId: ship.id,
-        shipName: ship.name,
-        createdAt: new Date().toISOString(),
-        status: "Pending",
+    try {
+      const payload = {
+        ship_id: ship.id,
+        ship_name: ship.name,
         form,
+        status: "pending",
       };
-      apps.unshift(app);
-      localStorage.setItem("applications", JSON.stringify(apps));
-      setTimeout(() => { setSubmitting(false); setSubmitted(app); }, 600);
+      const res = await axios.post(`${API_URL}/applications`, payload);
+      const created = res?.data?.data || { id: `app_${Date.now()}`, shipId: ship.id, shipName: ship.name, createdAt: new Date().toISOString(), status: 'pending', form };
+      // add to user's applications in store
+      dispatch(addApplication(created));
+      setSubmitted(created);
+    } catch (err) {
+      console.error(err);
+      // fallback to localStorage if API fails
+      const apps = JSON.parse(localStorage.getItem("applications") || "[]");
+      if (editId) {
+        const next = apps.map((a) => (a.id === editId ? { ...a, form, createdAt: a.createdAt } : a));
+        localStorage.setItem("applications", JSON.stringify(next));
+        const updated = next.find((a) => a.id === editId);
+        setSubmitted(updated);
+      } else {
+        const app = {
+          id: `app_${Date.now()}`,
+          shipId: ship.id,
+          shipName: ship.name,
+          createdAt: new Date().toISOString(),
+          status: "pending",
+          form,
+        };
+        apps.unshift(app);
+        localStorage.setItem("applications", JSON.stringify(apps));
+        dispatch(addApplication(app));
+        setSubmitted(app);
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 

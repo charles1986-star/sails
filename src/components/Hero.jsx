@@ -34,7 +34,7 @@ function Hero() {
       <div className={`hero-content ${visible ? "show" : ""}`}>
         <span className="hero-badge">Maritime Digital Platform</span>
 
-        <h1>
+        <h1 class="landing-hero-title">
           Trade, Play, and Manage Sails
           <br />
           in One Platform

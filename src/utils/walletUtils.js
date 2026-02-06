@@ -204,6 +204,12 @@ export function updateUserProfile(profile) {
   return wallet;
 }
 
+export function addAnchors(amount) {
+  const wallet = JSON.parse(localStorage.getItem("wallet")) || { anchors: 0 };
+  wallet.anchors += amount;
+  localStorage.setItem("wallet", JSON.stringify(wallet));
+}
+
 export default {
   initializeWallet,
   getWallet,
