@@ -15,11 +15,19 @@ import articlesRouter from './routes/articles.js';
 import shipsRouter from './routes/ships.js';
 import gamesRouter from './routes/games.js';
 import categoriesRouter from './routes/categories.js';
+import prizewheelRouter from './routes/prizewheel.js';
+import booksCategories from './routes/books-categories.js';
+import mediaCategories from './routes/media-categories.js';
+import articlesCategories from './routes/articles-categories.js';
+import gamesCategories from './routes/games-categories.js';
 
 // Create Express app
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve public uploads folder as static
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
 // MySQL connection pool
 const pool = mysql.createPool({
@@ -67,6 +75,8 @@ async function initDatabase() {
       password VARCHAR(255) NOT NULL,
       role ENUM('user', 'admin') DEFAULT 'user',
       score INT DEFAULT 0,
+      anchors INT DEFAULT 0,
+      last_prize_date DATE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
     `CREATE TABLE IF NOT EXISTS transactions (
@@ -85,10 +95,12 @@ async function initDatabase() {
       author VARCHAR(255),
       description TEXT,
       price DECIMAL(10, 2),
+      category_id INT,
       category VARCHAR(100),
       cover_image VARCHAR(255),
       status ENUM('active', 'inactive') DEFAULT 'active',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
     )`,
     `CREATE TABLE IF NOT EXISTS media (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -96,20 +108,24 @@ async function initDatabase() {
       description TEXT,
       media_type ENUM('image', 'video', 'audio') DEFAULT 'image',
       file_url VARCHAR(255),
+      category_id INT,
       category VARCHAR(100),
       status ENUM('active', 'inactive') DEFAULT 'active',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
     )`,
     `CREATE TABLE IF NOT EXISTS articles (
       id INT AUTO_INCREMENT PRIMARY KEY,
       title VARCHAR(255) NOT NULL,
       content TEXT,
       author_id INT,
+      category_id INT,
       category VARCHAR(100),
       status ENUM('draft', 'published') DEFAULT 'draft',
       views INT DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+      FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
     )`,
     `CREATE TABLE IF NOT EXISTS shops (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -145,10 +161,12 @@ async function initDatabase() {
       id INT AUTO_INCREMENT PRIMARY KEY,
       title VARCHAR(255) NOT NULL,
       description TEXT,
+      category_id INT,
       category VARCHAR(100),
       price DECIMAL(10, 2) DEFAULT 0,
       status ENUM('active', 'inactive') DEFAULT 'active',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
     )`,
     `CREATE TABLE IF NOT EXISTS applications (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -469,6 +487,11 @@ app.use('/api/admin', articlesRouter);
 app.use('/api/admin', shipsRouter);
 app.use('/api/admin', gamesRouter);
 app.use('/api/admin', categoriesRouter);
+app.use('/api/admin/books-categories', booksCategories);
+app.use('/api/admin/media-categories', mediaCategories);
+app.use('/api/admin/articles-categories', articlesCategories);
+app.use('/api/admin/games-categories', gamesCategories);
+app.use('/api', prizewheelRouter);
 
 // Start server
 const PORT = process.env.PORT || 5000;

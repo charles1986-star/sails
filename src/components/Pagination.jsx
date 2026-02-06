@@ -1,44 +1,135 @@
-import React from "react";
-import "../styles/admin.css";
+import React from 'react';
+import '../styles/pagination.css';
 
-export default function Pagination({ page, totalPages, onChange }) {
-  if (totalPages <= 1) return null;
+const Pagination = ({ 
+  currentPage = 1, 
+  totalItems = 0, 
+  itemsPerPage = 12, 
+  onPageChange = () => {},
+  showInfo = true,
+  // Legacy props support
+  page,
+  totalPages,
+  onChange
+}) => {
+  // Support both new and legacy prop names
+  const currentPageValue = page !== undefined ? page : currentPage;
+  const totalPagesValue = totalPages !== undefined ? totalPages : Math.ceil(totalItems / itemsPerPage);
+  const handleChange = onChange || onPageChange;
+  
+  if (totalPagesValue <= 1) return null;
 
-  const pages = [];
-  const start = Math.max(1, page - 2);
-  const end = Math.min(totalPages, start + 4);
+  const handlePrevious = () => {
+    if (currentPageValue > 1) {
+      handleChange(currentPageValue - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
-  for (let i = start; i <= end; i++) pages.push(i);
+  const handleNext = () => {
+    if (currentPageValue < totalPagesValue) {
+      handleChange(currentPageValue + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handlePageClick = (newPage) => {
+    if (newPage !== currentPageValue) {
+      handleChange(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPageValue - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPagesValue, startPage + maxVisiblePages - 1);
+    
+    // Adjust if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // First page
+    if (startPage > 1) {
+      pages.push(1);
+      if (startPage > 2) {
+        pages.push('...');
+      }
+    }
+
+    // Middle pages
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    // Last page
+    if (endPage < totalPagesValue) {
+      if (endPage < totalPagesValue - 1) {
+        pages.push('...');
+      }
+      pages.push(totalPagesValue);
+    }
+
+    return pages;
+  };
+
+  const startItem = (currentPageValue - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPageValue * itemsPerPage, totalItems);
 
   return (
-    <div className="pagination-upwork">
-      <button onClick={() => onChange(Math.max(1, page - 1))} disabled={page === 1}>
-        ‹
-      </button>
-
-      {start > 1 && (
-        <>
-          <button onClick={() => onChange(1)}>1</button>
-          {start > 2 && <span className="dots">…</span>}
-        </>
+    <div className="pagination-container">
+      {showInfo && totalItems > 0 && (
+        <div className="pagination-info">
+          Showing <span className="pagination-highlight">{startItem}</span> to <span className="pagination-highlight">{endItem}</span> of <span className="pagination-highlight">{totalItems}</span> results
+        </div>
       )}
 
-      {pages.map((p) => (
-        <button key={p} className={p === page ? "active" : ""} onClick={() => onChange(p)}>
-          {p}
+      <div className="pagination-wrapper">
+        <button
+          className="pagination-btn pagination-btn-prev"
+          onClick={handlePrevious}
+          disabled={currentPageValue === 1}
+          title="Previous page"
+        >
+          ← Previous
         </button>
-      ))}
 
-      {end < totalPages && (
-        <>
-          {end < totalPages - 1 && <span className="dots">…</span>}
-          <button onClick={() => onChange(totalPages)}>{totalPages}</button>
-        </>
-      )}
+        <div className="pagination-numbers">
+          {getPageNumbers().map((page, idx) => (
+            page === '...' ? (
+              <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
+                •••
+              </span>
+            ) : (
+              <button
+                key={page}
+                className={`pagination-number ${page === currentPageValue ? 'active' : ''}`}
+                onClick={() => handlePageClick(page)}
+                title={`Go to page ${page}`}
+              >
+                {page}
+              </button>
+            )
+          ))}
+        </div>
 
-      <button onClick={() => onChange(Math.min(totalPages, page + 1))} disabled={page === totalPages}>
-        ›
-      </button>
+        <button
+          className="pagination-btn pagination-btn-next"
+          onClick={handleNext}
+          disabled={currentPageValue === totalPagesValue}
+          title="Next page"
+        >
+          Next →
+        </button>
+      </div>
+
+      <div className="pagination-stats">
+        Page <span className="pagination-highlight">{currentPageValue}</span> of <span className="pagination-highlight">{totalPagesValue}</span>
+      </div>
     </div>
   );
-}
+};
+
+export default Pagination;

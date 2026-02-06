@@ -6,6 +6,7 @@ import axios from "axios";
 import { addApplication } from "../redux/slices/applicationSlice";
 import { getAuthHeader } from "../utils/auth";
 import Notice from "../components/Notice";
+import SuccessModal from "../components/SuccessModal";
 import "../styles/shipsearch.css";
 
 
@@ -96,9 +97,33 @@ export default function ShipApply() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.cargoType || !form.weight || !form.contactName || !form.contactEmail) {
-      setNotice({ type: "error", msg: "Please fill required fields: cargo type, weight, name, email." });
+    
+    // Comprehensive validation
+    if (!form.cargoType || form.cargoType.trim() === '') {
+      setNotice({ type: "error", msg: "Please select a cargo type." });
       return;
+    }
+    
+    if (!form.weight || isNaN(form.weight) || parseFloat(form.weight) <= 0) {
+      setNotice({ type: "error", msg: "Please enter a valid weight/volume (must be positive number)." });
+      return;
+    }
+
+    if (!form.contactName || form.contactName.trim().length < 2) {
+      setNotice({ type: "error", msg: "Please enter a valid name (at least 2 characters)." });
+      return;
+    }
+
+    if (!form.contactEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) {
+      setNotice({ type: "error", msg: "Please enter a valid email address." });
+      return;
+    }
+
+    if (form.contactPhone && form.contactPhone.trim().length > 0) {
+      if (!/^[\d\s\-\+\(\)]{7,}$/.test(form.contactPhone)) {
+        setNotice({ type: "error", msg: "Please enter a valid phone number." });
+        return;
+      }
     }
 
     if (!user || !user.id) {
@@ -114,21 +139,25 @@ export default function ShipApply() {
         cargo_type: form.cargoType,
         cargo_weight: form.weight,
         weight_unit: form.weightUnit,
-        preferred_loading_date: form.preferredLoadingDate,
-        preferred_arrival_date: form.preferredArrivalDate,
-        contact_name: form.contactName,
-        contact_email: form.contactEmail,
-        contact_phone: form.contactPhone,
-        message: form.message,
+        preferred_loading_date: form.preferredLoadingDate || null,
+        preferred_arrival_date: form.preferredArrivalDate || null,
+        contact_name: form.contactName.trim(),
+        contact_email: form.contactEmail.trim(),
+        contact_phone: form.contactPhone?.trim() || null,
+        message: form.message?.trim() || null,
       };
       
       const res = await axios.post(`${API_URL}/applications`, payload, { headers: getAuthHeader() });
       
-      if (res?.data?.data) {
-        setSubmitted(res.data.data);
+      if (res?.data?.data || res?.data?.msg) {
+        setSubmitted({
+          id: res.data.data?.id || `app_${Date.now()}`,
+          status: 'pending'
+        });
         dispatch(addApplication(res.data.data));
         setNotice({ type: "success", msg: "Application submitted successfully!" });
-        setTimeout(() => navigate('/applications'), 2000);
+        // Redirect after showing success
+        setTimeout(() => navigate('/applications'), 2500);
       }
     } catch (err) {
       console.error(err);
@@ -141,6 +170,11 @@ export default function ShipApply() {
   return (
     <div className="apply-page">
       {notice && <Notice type={notice.type} msg={notice.msg} />}
+      <SuccessModal 
+        isOpen={!!submitted} 
+        onClose={() => setSubmitted(null)}
+        data={submitted}
+      />
       <div className="container detail-grid">
         <div className="detail-left">
           <div className="detail-card card-shadow">

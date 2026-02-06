@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import ShipFilterPanel from "../components/ShipFilterPanel";
 import ShipList from "../components/ShipList";
+import Pagination from "../components/Pagination";
 import shipsData from "../data/ships";
 import { setShips } from "../redux/slices/shipSlice";
 import axios from "axios";
@@ -14,6 +15,8 @@ export default function ShipSearch() {
   const [filters, setFilters] = useState({ startPort: "", endPort: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });
   const [searchText, setSearchText] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   const dispatch = useDispatch();
   const shipsFromStore = useSelector((state) => state.ships.ships);
@@ -96,7 +99,12 @@ export default function ShipSearch() {
     if (key === "searchText") return setSearchText("");
     if (key === "all") return setFilters({ startPort: "", endPort: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });
     setFilters((prev) => ({ ...prev, [key]: Array.isArray(prev[key]) ? [] : "" }));
+    setCurrentPage(1); // Reset to first page on filter change
   };
+
+  // Paginate filtered results
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const paginatedShips = filtered.slice(startIdx, startIdx + itemsPerPage);
 
   return (
     <div className="ship-search-page">
@@ -131,7 +139,15 @@ export default function ShipSearch() {
             )}
           </div>
 
-          <ShipList ships={filtered} onView={handleView} onApply={handleApply} />
+          <ShipList ships={paginatedShips} onView={handleView} onApply={handleApply} />
+          
+          <Pagination 
+            currentPage={currentPage}
+            totalItems={filtered.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            showInfo={true}
+          />
         </main>
       </div>
     </div>

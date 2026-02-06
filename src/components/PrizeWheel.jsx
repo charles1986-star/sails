@@ -1,6 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useDispatch } from 'react-redux';
+import axios from 'axios';
+import { getAuthHeader } from '../utils/auth';
+import { updateUserScore } from '../redux/slices/authSlice';
 import "../styles/prizeWheel.css";
-import { addAnchors } from "../utils/walletUtils";
 
 const PRIZES = [
   { label: "10 ⚓", value: 10, weight: 30 },
@@ -15,6 +18,25 @@ export default function PrizeWheel() {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
   const wheelRef = useRef(null);
+  const [canPlay, setCanPlay] = useState(false);
+  const [userAnchors, setUserAnchors] = useState(0);
+  const [userScore, setUserScore] = useState(0);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const loadStatus = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/prize-wheel/status', { headers: getAuthHeader() });
+        const d = res.data.data;
+        setCanPlay(!!d.canPlayToday);
+        setUserAnchors(d.anchors || 0);
+        setUserScore(d.score || 0);
+      } catch (err) {
+        console.error('Failed to fetch prize wheel status', err);
+      }
+    };
+    loadStatus();
+  }, []);
 
   // Pick prize based on weight
   function pickPrize() {
@@ -24,11 +46,17 @@ export default function PrizeWheel() {
       if (r < p.weight) return p;
       r -= p.weight;
     }
+    return PRIZES[0];
   }
 
   // Spin the wheel with multiple rotations
   function spin() {
     if (spinning) return;
+    if (!canPlay) {
+      setResult({ label: 'You have already played today. Come back tomorrow.', value: 0, error: true });
+      return;
+    }
+
     setSpinning(true);
     setResult(null);
 
@@ -48,19 +76,34 @@ export default function PrizeWheel() {
       wheelRef.current.style.transform = `rotate(${deg}deg)`;
     }
 
-    // After spinning, set the result
+    // After spinning, set the result and persist to backend
     setTimeout(() => {
-      setRotation((prev) => prev + deg); // Keep rotation cumulative
+      setRotation((prev) => prev + deg);
       setResult(prize);
-      if (prize.value > 0) addAnchors(prize.value);
-      setSpinning(false);
+
+      (async () => {
+        try {
+          const res = await axios.post('http://localhost:5000/api/prize-wheel/spin', { reward: prize.value }, { headers: getAuthHeader() });
+          const d = res.data.data;
+          setUserAnchors(d.newAnchors || (userAnchors + (prize.value > 0 ? 1 : 0)));
+          setUserScore(d.newScore || (userScore + prize.value));
+          dispatch(updateUserScore(d.newScore || (userScore + prize.value)));
+          setCanPlay(false);
+        } catch (err) {
+          console.error('Spin failed', err);
+          const msg = err.response?.data?.msg || 'Spin failed';
+          setResult({ label: msg, value: 0, error: true });
+        } finally {
+          setSpinning(false);
+        }
+      })();
 
       // Reset transition to allow next spin
       if (wheelRef.current) {
         wheelRef.current.style.transition = "none";
         wheelRef.current.style.transform = `rotate(${rotation + deg}deg)`;
       }
-    }, 5200); // Match animation duration
+    }, 5200);
   }
 
   return (
@@ -81,14 +124,25 @@ export default function PrizeWheel() {
       </div>
 
       <button className="spin-btn" disabled={spinning} onClick={spin}>
-        {spinning ? "Spinning..." : "Spin the Wheel"}
+        {spinning ? "Spinning..." : (canPlay ? 'Spin the Wheel' : 'Already Played Today')}
       </button>
 
-      {result && (
+      {result && !result.error && (
         <div className="wheel-result">
           🎉 You won <strong>{result.label}</strong>
         </div>
       )}
+
+      {result && result.error && (
+        <div className="wheel-result wheel-error">
+          {result.label}
+        </div>
+      )}
+
+      <div className="wheel-stats">
+        <div>Anchors: <strong>{userAnchors}</strong></div>
+        <div>Score: <strong>{userScore}</strong></div>
+      </div>
     </div>
   );
 }

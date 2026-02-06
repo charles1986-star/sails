@@ -87,7 +87,12 @@ export default function ShipDetail() {
 
             {/* Ship image */}
             <div className="ship-detail-image">
-              <img src="/images/your-ship-hero.jpg" alt={ship.name} loading="lazy" />
+              <img 
+                src={ship.image_url || "/images/your-ship-hero.jpg"} 
+                alt={ship.name} 
+                loading="lazy" 
+                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+              />
             </div>
 
             {/* Header */}
@@ -95,10 +100,10 @@ export default function ShipDetail() {
               <div>
                 <h1>{ship.name}</h1>
                 {ship.imo && <div className="imo">IMO: {ship.imo}</div>}
-                <div className="detail-sub">{ship.type} • {ship.startPort} → {ship.endPort}</div>
+                <div className="detail-sub">{ship.type} • {ship.current_port || 'Port'} → {ship.next_port || 'Port'}</div>
               </div>
               <div className="detail-meta">
-                <div className="posted">Posted: {new Date(ship.postedAt).toLocaleDateString()}</div>
+                <div className="posted">Posted: {new Date(ship.created_at).toLocaleDateString()}</div>
                 <button className="back-link" onClick={() => navigate(-1)}>← Back to search</button>
               </div>
             </div>

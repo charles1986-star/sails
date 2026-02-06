@@ -29,6 +29,7 @@ import SailsIntro from "./components/landing/SailsIntro";
 import ScrollToTop from "./components/ScrollToTop";
 import { initializeAuth, logoutUser } from "./utils/auth";
 import { logout, updateUserScore } from "./redux/slices/authSlice";
+import useUserState from './hooks/useUserState';
 
 
 // Admin pages
@@ -57,6 +58,9 @@ import GameEdit from "./pages/admin/GameEdit";
 import AdminCategories from "./pages/admin/Categories";
 import CategoryCreate from "./pages/admin/CategoryCreate";
 import CategoryEdit from "./pages/admin/CategoryEdit";
+import EntityCategories from "./pages/admin/EntityCategories";
+import EntityCategoryCreate from "./pages/admin/EntityCategoryCreate";
+import EntityCategoryEdit from "./pages/admin/EntityCategoryEdit";
 import AdminLayout from "./components/AdminLayout";
 import ShipCreate from "./pages/admin/ShipCreate";
 import ShipEdit from "./pages/admin/ShipEdit";
@@ -89,7 +93,9 @@ function App() {
     // Initialize Redux auth state from localStorage on mount
     initializeAuth();
   }, []);
-
+  
+  // keep user state (score/anchors) refreshed
+  useUserState();
   function handleLoginClick() {
     // route to login page
     window.location.href = '/signup';
@@ -185,6 +191,18 @@ function App() {
           <Route path="categories" element={<AdminCategories />} />
           <Route path="categories/create" element={<CategoryCreate />} />
           <Route path="categories/edit/:id" element={<CategoryEdit />} />
+          <Route path="books-categories" element={<EntityCategories />} />
+          <Route path="books-categories/create" element={<EntityCategoryCreate />} />
+          <Route path="books-categories/:id" element={<EntityCategoryEdit />} />
+          <Route path="media-categories" element={<EntityCategories />} />
+          <Route path="media-categories/create" element={<EntityCategoryCreate />} />
+          <Route path="media-categories/:id" element={<EntityCategoryEdit />} />
+          <Route path="articles-categories" element={<EntityCategories />} />
+          <Route path="articles-categories/create" element={<EntityCategoryCreate />} />
+          <Route path="articles-categories/:id" element={<EntityCategoryEdit />} />
+          <Route path="games-categories" element={<EntityCategories />} />
+          <Route path="games-categories/create" element={<EntityCategoryCreate />} />
+          <Route path="games-categories/:id" element={<EntityCategoryEdit />} />
           <Route path="games" element={<AdminGames />} />
           <Route path="games/new" element={<GameCreate />} />
           <Route path="games/:id/edit" element={<GameEdit />} />
