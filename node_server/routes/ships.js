@@ -7,8 +7,8 @@ import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Ensure public uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+// Ensure public uploads/ship directory exists
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'ship');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -89,11 +89,11 @@ router.get('/ships/:id', async (req, res) => {
 // POST - Create new ship (admin only)
 router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (req, res) => {
   try {
-    const { name, imo, type, capacity_tons, current_port, next_port, ship_owner, description, last_maintenance_date } = req.body;
+    const { name, imo, type, capacity_tons, start_port_id, end_port_id, ship_owner, description, last_maintenance_date, status } = req.body;
 
     // Validation
-    if (!name || !imo || !type || !capacity_tons) {
-      return res.status(400).json({ msg: 'Required fields: name, IMO, type, capacity_tons', type: 'error' });
+    if (!name || !imo || !type || !capacity_tons || !start_port_id || !end_port_id) {
+      return res.status(400).json({ msg: 'Required fields: name, IMO, type, capacity_tons, start_port_id, end_port_id', type: 'error' });
     }
 
     if (typeof capacity_tons !== 'string' || isNaN(parseInt(capacity_tons))) {
@@ -106,15 +106,23 @@ router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (r
       return res.status(400).json({ msg: 'IMO number already exists', type: 'error' });
     }
 
-    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    // Verify ports exist
+    const [startPort] = await db.query('SELECT id FROM ports WHERE id = ?', [start_port_id]);
+    const [endPort] = await db.query('SELECT id FROM ports WHERE id = ?', [end_port_id]);
+    if (startPort.length === 0 || endPort.length === 0) {
+      return res.status(400).json({ msg: 'Invalid port ID', type: 'error' });
+    }
 
-    await db.query(
-      `INSERT INTO ships (name, imo, type, capacity_tons, current_port, next_port, ship_owner, image_url, description, last_maintenance_date, status)
+    const image_url = req.file ? `/uploads/ship/${req.file.filename}` : null;
+
+    const [result] = await db.query(
+      `INSERT INTO ships (name, imo, type, capacity_tons, start_port_id, end_port_id, ship_owner, image_url, description, last_maintenance_date, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, imo, type, parseInt(capacity_tons), current_port || null, next_port || null, ship_owner || null, image_url, description || null, last_maintenance_date || null, 'active']
+      [name, imo, type, parseInt(capacity_tons), start_port_id, end_port_id, ship_owner || null, image_url, description || null, last_maintenance_date || null, status || 'active']
     );
 
-    res.status(201).json({ msg: 'Ship created successfully', type: 'success' });
+    const [shipData] = await db.query('SELECT * FROM ships WHERE id = ?', [result.insertId]);
+    res.status(201).json({ data: shipData[0], msg: 'Ship created successfully', type: 'success' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error', type: 'error' });
@@ -125,7 +133,7 @@ router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (r
 router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, imo, type, capacity_tons, current_port, next_port, ship_owner, description, last_maintenance_date, status } = req.body;
+    const { name, imo, type, capacity_tons, start_port_id, end_port_id, ship_owner, description, last_maintenance_date, status } = req.body;
 
     // Check if ship exists
     const [existing] = await db.query('SELECT * FROM ships WHERE id = ?', [id]);
@@ -141,7 +149,21 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
       }
     }
 
-    const image_url = req.file ? `/uploads/${req.file.filename}` : existing[0].image_url;
+    // Verify ports exist if provided
+    if (start_port_id) {
+      const [startPort] = await db.query('SELECT id FROM ports WHERE id = ?', [start_port_id]);
+      if (startPort.length === 0) {
+        return res.status(400).json({ msg: 'Start port not found', type: 'error' });
+      }
+    }
+    if (end_port_id) {
+      const [endPort] = await db.query('SELECT id FROM ports WHERE id = ?', [end_port_id]);
+      if (endPort.length === 0) {
+        return res.status(400).json({ msg: 'End port not found', type: 'error' });
+      }
+    }
+
+    const image_url = req.file ? `/uploads/ship/${req.file.filename}` : existing[0].image_url;
 
     const updateFields = [];
     const updateValues = [];
@@ -162,13 +184,13 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
       updateFields.push('capacity_tons = ?');
       updateValues.push(parseInt(capacity_tons));
     }
-    if (current_port !== undefined) {
-      updateFields.push('current_port = ?');
-      updateValues.push(current_port || null);
+    if (start_port_id !== undefined) {
+      updateFields.push('start_port_id = ?');
+      updateValues.push(start_port_id || null);
     }
-    if (next_port !== undefined) {
-      updateFields.push('next_port = ?');
-      updateValues.push(next_port || null);
+    if (end_port_id !== undefined) {
+      updateFields.push('end_port_id = ?');
+      updateValues.push(end_port_id || null);
     }
     if (ship_owner !== undefined) {
       updateFields.push('ship_owner = ?');
@@ -188,14 +210,17 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
     }
 
     updateFields.push('updated_at = NOW()');
+    updateFields.push('image_url = ?');
+    updateValues.push(image_url);
+    updateValues.push(id);
 
     if (updateFields.length > 0) {
-      const query = `UPDATE ships SET ${updateFields.join(', ')}, image_url = ? WHERE id = ?`;
-      updateValues.push(image_url, id);
+      const query = `UPDATE ships SET ${updateFields.join(', ')} WHERE id = ?`;
       await db.query(query, updateValues);
     }
 
-    res.json({ msg: 'Ship updated successfully', type: 'success' });
+    const [shipData] = await db.query('SELECT * FROM ships WHERE id = ?', [id]);
+    res.json({ data: shipData[0], msg: 'Ship updated successfully', type: 'success' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error', type: 'error' });

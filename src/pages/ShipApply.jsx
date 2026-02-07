@@ -114,11 +114,7 @@ export default function ShipApply() {
       return;
     }
 
-    if (!form.contactEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) {
-      setNotice({ type: "error", msg: "Please enter a valid email address." });
-      return;
-    }
-
+    
     if (form.contactPhone && form.contactPhone.trim().length > 0) {
       if (!/^[\d\s\-\+\(\)]{7,}$/.test(form.contactPhone)) {
         setNotice({ type: "error", msg: "Please enter a valid phone number." });
@@ -247,8 +243,6 @@ export default function ShipApply() {
                   <h3>Contact Information</h3>
                   <label>Name *</label>
                   <input value={form.contactName} onChange={handleChange("contactName")} />
-                  <label>Email *</label>
-                  <input value={form.contactEmail} onChange={handleChange("contactEmail")} type="email" />
                   <label>Phone</label>
                   <input value={form.contactPhone} onChange={handleChange("contactPhone")} />
                 </section>

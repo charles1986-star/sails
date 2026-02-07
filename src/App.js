@@ -52,6 +52,11 @@ import AdminShops from "./pages/admin/Shops";
 import ShopCreate from "./pages/admin/ShopCreate";
 import ShopEdit from "./pages/admin/ShopEdit";
 import AdminShips from "./pages/admin/Ships";
+import ShipCreate from "./pages/admin/ShipCreate";
+import ShipEdit from "./pages/admin/ShipEdit";
+import AdminPorts from "./pages/admin/Ports";
+import PortCreate from "./pages/admin/PortCreate";
+import PortEdit from "./pages/admin/PortEdit";
 import AdminGames from "./pages/admin/Games";
 import GameCreate from "./pages/admin/GameCreate";
 import GameEdit from "./pages/admin/GameEdit";
@@ -62,9 +67,28 @@ import EntityCategories from "./pages/admin/EntityCategories";
 import EntityCategoryCreate from "./pages/admin/EntityCategoryCreate";
 import EntityCategoryEdit from "./pages/admin/EntityCategoryEdit";
 import AdminLayout from "./components/AdminLayout";
-import ShipCreate from "./pages/admin/ShipCreate";
-import ShipEdit from "./pages/admin/ShipEdit";
 
+import { useNavigate, useLocation } from "react-router-dom"; // <-- add this
+
+
+const ProtectedRoute = ({ element, requiredRole = null }) => {
+  const user = useSelector((state) => state.auth.user);
+  const loggedIn = !!user;
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!loggedIn) {
+      navigate("/login", { replace: true });
+    } else if (requiredRole && user?.role !== requiredRole) {
+      navigate("/", { replace: true });
+    }
+  }, [loggedIn, requiredRole, user, navigate]);
+
+  if (!loggedIn || (requiredRole && user?.role !== requiredRole)) return null;
+
+  return element;
+};
 
 function App() {
   const dispatch = useDispatch();
@@ -113,19 +137,6 @@ function App() {
     window.dispatchEvent(new Event("walletUpdated"));
   };
 
-  // Protected route component
-  const ProtectedRoute = ({ element, requiredRole = null }) => {
-    console.log("ProtectedRoute check - isLoggedIn:", isLoggedIn, "user:", user, "requiredRole:", requiredRole, "user.role:", user?.role);
-    if (!isLoggedIn || !user) {
-      return <Navigate to="/login" />;
-    }
-    if (requiredRole && user.role !== requiredRole) {
-      console.warn(`Access denied: Required role '${requiredRole}' but user has '${user.role}'`);
-      return <Navigate to="/" />;
-    }
-    return element;
-  };
-
   return (
     <BrowserRouter>
       <Navbar
@@ -166,7 +177,7 @@ function App() {
         <Route path="/admin/games" element={<ProtectedRoute element={<AdminGames />} requiredRole="admin" />} /> */}
 
 
-        <Route path="/admin/*" element={<ProtectedRoute element={<AdminLayout />} requiredRole="admin" />}>
+        <Route path="/admin/*" element={<ProtectedRoute element={<AdminLayout />} requiredRole="admin" isLoggedIn={isLoggedIn} user={user} />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="applications" element={<AdminApplications />} />
           <Route path="applications/:id/edit" element={<AdminApplicationEdit />} />
@@ -188,6 +199,9 @@ function App() {
           <Route path="ships" element={<AdminShips />} />
           <Route path="ships/new" element={<ShipCreate />} />
           <Route path="ships/:id/edit" element={<ShipEdit />} />
+          <Route path="ports" element={<AdminPorts />} />
+          <Route path="ports/new" element={<PortCreate />} />
+          <Route path="ports/:id/edit" element={<PortEdit />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="categories/create" element={<CategoryCreate />} />
           <Route path="categories/edit/:id" element={<CategoryEdit />} />

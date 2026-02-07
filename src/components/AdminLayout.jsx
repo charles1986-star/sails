@@ -42,7 +42,14 @@ export default function AdminLayout() {
         { name: "Categories", to: "/admin/shop-categories" },
       ],
     },
-    { name: "Ships", to: "/admin/ships" },
+    {
+      name: "Ships",
+      to: "/admin/ships",
+      submenu: [
+        { name: "Ships List", to: "/admin/ships" },
+        { name: "Port Management", to: "/admin/ports" },
+      ],
+    },
     {
       name: "Games",
       to: "/admin/games",

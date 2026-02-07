@@ -24,17 +24,21 @@ export default function ShipCard({ ship, onView, onApply }) {
   /* -----------------------------
      Smart image resolver
   ------------------------------*/
-  const imageSrc = useMemo(() => {
-    if (imgError) return DEFAULT_SHIP;
+  // const imageSrc = useMemo(() => {
+  //   if (imgError) return DEFAULT_SHIP;
 
-    if (!ship.image) return DEFAULT_SHIP;
+  //   if (!ship.image) return DEFAULT_SHIP;
 
-    // absolute URL
-    if (ship.image.startsWith("http")) return ship.image;
+  //   // absolute URL
+  //   if (ship.image.startsWith("http")) return ship.image;
 
-    // relative path from backend
-    return `${API_BASE}${ship.image}`;
-  }, [ship.image, imgError]);
+  //   // relative path from backend
+  //   console.log("Attempting to resolve image URL:", API_BASE, ship.image);
+    
+  //   return `${API_BASE}${ship.image}`;
+  // }, [ship.image, imgError]);
+
+  const imageSrc = `${API_BASE}${ship.image_url}`
 
   /* ----------------------------- */
 
@@ -43,7 +47,7 @@ export default function ShipCard({ ship, onView, onApply }) {
       {/* Image */}
       <div className="ship-image">
         <img
-          src={ship.image_url}
+          src={imageSrc}
           alt={ship.name}
           loading="lazy"
           onError={() => setImgError(true)}

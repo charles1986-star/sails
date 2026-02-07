@@ -13,6 +13,7 @@ import booksRouter from './routes/books.js';
 import mediaRouter from './routes/media.js';
 import articlesRouter from './routes/articles.js';
 import shipsRouter from './routes/ships.js';
+import portsRouter from './routes/ports.js';
 import gamesRouter from './routes/games.js';
 import categoriesRouter from './routes/categories.js';
 import prizewheelRouter from './routes/prizewheel.js';
@@ -138,14 +139,24 @@ async function initDatabase() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
     )`,
+    `CREATE TABLE IF NOT EXISTS ports (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      country VARCHAR(100) NOT NULL,
+      description TEXT,
+      status ENUM('active', 'inactive') DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_country (country),
+      INDEX idx_status (status)
+    )`,
     `CREATE TABLE IF NOT EXISTS ships (
       id INT AUTO_INCREMENT PRIMARY KEY,
       imo VARCHAR(10) UNIQUE NOT NULL,
       name VARCHAR(255) NOT NULL,
       type VARCHAR(100) NOT NULL,
       capacity_tons INT NOT NULL,
-      current_port VARCHAR(255),
-      next_port VARCHAR(255),
+      start_port_id INT,
+      end_port_id INT,
       ship_owner VARCHAR(255),
       image_url VARCHAR(255),
       last_maintenance_date DATE,
@@ -154,8 +165,12 @@ async function initDatabase() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       UNIQUE KEY unique_imo (imo),
+      FOREIGN KEY (start_port_id) REFERENCES ports(id) ON DELETE SET NULL,
+      FOREIGN KEY (end_port_id) REFERENCES ports(id) ON DELETE SET NULL,
       INDEX idx_status (status),
-      INDEX idx_imo (imo)
+      INDEX idx_imo (imo),
+      INDEX idx_start_port (start_port_id),
+      INDEX idx_end_port (end_port_id)
     )`,
     `CREATE TABLE IF NOT EXISTS games (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -485,6 +500,7 @@ app.use('/api/admin', booksRouter);
 app.use('/api/admin', mediaRouter);
 app.use('/api/admin', articlesRouter);
 app.use('/api/admin', shipsRouter);
+app.use('/api/admin', portsRouter);
 app.use('/api/admin', gamesRouter);
 app.use('/api/admin', categoriesRouter);
 app.use('/api/admin/books-categories', booksCategories);

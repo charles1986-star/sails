@@ -7,7 +7,7 @@ import "../styles/shipsearch.css";
 // import defaultShipImage from "../assets/ship-default.jpg"; // add a default ship image
 
 const API_URL = "http://localhost:5000/api/admin";
-
+const API_BASE = "http://localhost:5000"; 
 export default function ShipDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -76,7 +76,7 @@ export default function ShipDetail() {
   };
 
   //const shipImage = ship.image || defaultShipImage;
-
+  const imageSrc = `${API_BASE}${ship.image_url}`
   return (
     <div className="ship-detail-page">
       <div className="container detail-grid">
@@ -88,7 +88,7 @@ export default function ShipDetail() {
             {/* Ship image */}
             <div className="ship-detail-image">
               <img 
-                src={ship.image_url || "/images/your-ship-hero.jpg"} 
+                src={imageSrc || "/images/your-ship-hero.jpg"} 
                 alt={ship.name} 
                 loading="lazy" 
                 style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
