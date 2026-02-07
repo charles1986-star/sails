@@ -51,6 +51,9 @@ import AdminApplicationEdit from "./pages/admin/ApplicationEdit";
 import AdminShops from "./pages/admin/Shops";
 import ShopCreate from "./pages/admin/ShopCreate";
 import ShopEdit from "./pages/admin/ShopEdit";
+import AdminShipCategories from "./pages/admin/ShopCategories";
+import ShopCategoryCreate from "./pages/admin/ShopCategoryCreate";
+import ShopCategoryEdit from "./pages/admin/ShopCategoryEdit";
 import AdminShips from "./pages/admin/Ships";
 import ShipCreate from "./pages/admin/ShipCreate";
 import ShipEdit from "./pages/admin/ShipEdit";
@@ -68,25 +71,16 @@ import EntityCategoryCreate from "./pages/admin/EntityCategoryCreate";
 import EntityCategoryEdit from "./pages/admin/EntityCategoryEdit";
 import AdminLayout from "./components/AdminLayout";
 
-import { useNavigate, useLocation } from "react-router-dom"; // <-- add this
+import { useNavigate } from "react-router-dom";
 
-
-const ProtectedRoute = ({ element, requiredRole = null }) => {
-  const user = useSelector((state) => state.auth.user);
-  const loggedIn = !!user;
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (!loggedIn) {
-      navigate("/login", { replace: true });
-    } else if (requiredRole && user?.role !== requiredRole) {
-      navigate("/", { replace: true });
-    }
-  }, [loggedIn, requiredRole, user, navigate]);
-
-  if (!loggedIn || (requiredRole && user?.role !== requiredRole)) return null;
-
+// Simple auth check without useEffect to prevent infinite loops
+const ProtectedRoute = ({ element, requiredRole = null, user = null, isLoggedIn = false }) => {
+  if (!isLoggedIn || !user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/" replace />;
+  }
   return element;
 };
 
@@ -196,6 +190,9 @@ function App() {
           <Route path="shops" element={<AdminShops />} />
           <Route path="shops/new" element={<ShopCreate />} />
           <Route path="shops/:id/edit" element={<ShopEdit />} />
+          <Route path="shop-categories" element={<AdminShipCategories />} />
+          <Route path="shop-categories/create" element={<ShopCategoryCreate />} />
+          <Route path="shop-categories/edit/:id" element={<ShopCategoryEdit />} />
           <Route path="ships" element={<AdminShips />} />
           <Route path="ships/new" element={<ShipCreate />} />
           <Route path="ships/:id/edit" element={<ShipEdit />} />

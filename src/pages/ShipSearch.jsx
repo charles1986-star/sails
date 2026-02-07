@@ -9,7 +9,7 @@ import { setShips } from "../redux/slices/shipSlice";
 import axios from "axios";
 import "../styles/shipsearch.css";
 
-const API_URL = "http://localhost:5000/api/admin";
+const API_URL = "http://localhost:5000/api";
 
 export default function ShipSearch() {
   const [filters, setFilters] = useState({ startPort: "", endPort: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });

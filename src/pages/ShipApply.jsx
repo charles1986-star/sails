@@ -10,7 +10,7 @@ import SuccessModal from "../components/SuccessModal";
 import "../styles/shipsearch.css";
 
 
-const API_URL = "http://localhost:5000/api/admin";
+const API_URL = "http://localhost:5000/api";
 
 export default function ShipApply() {
   const { id } = useParams();
@@ -57,6 +57,14 @@ export default function ShipApply() {
         const res = await axios.get(`${API_URL}/ships/${id}`);
         if (res?.data?.data) {
           setShip(res.data.data);
+        } else if (res?.data) {
+          // Handle case where ships endpoint returns array
+          const foundShip = Array.isArray(res.data) ? 
+            res.data.find((s) => s.id === parseInt(id)) : 
+            res.data.data;
+          if (foundShip) {
+            setShip(foundShip);
+          }
         }
       } catch (err) {
         console.error("Failed to load ship:", err);
@@ -143,7 +151,7 @@ export default function ShipApply() {
         message: form.message?.trim() || null,
       };
       
-      const res = await axios.post(`${API_URL}/applications`, payload, { headers: getAuthHeader() });
+      const res = await axios.post(`${API_URL}/ships/applications`, payload, { headers: getAuthHeader() });
       
       if (res?.data?.data || res?.data?.msg) {
         setSubmitted({

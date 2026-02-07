@@ -21,6 +21,7 @@ import booksCategories from './routes/books-categories.js';
 import mediaCategories from './routes/media-categories.js';
 import articlesCategories from './routes/articles-categories.js';
 import gamesCategories from './routes/games-categories.js';
+import shopCategories from './routes/shop-categories.js';
 
 // Create Express app
 const app = express();
@@ -145,12 +146,33 @@ async function initDatabase() {
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       description TEXT,
-      category VARCHAR(100),
+      shop_category_id INT,
       owner_id INT,
+      image_url VARCHAR(255),
+      sku VARCHAR(100),
+      brand VARCHAR(100),
+      model_number VARCHAR(100),
+      color VARCHAR(100),
+      material VARCHAR(100),
+      status ENUM('active', 'inactive') DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (shop_category_id) REFERENCES shop_categories(id) ON DELETE SET NULL,
+      INDEX idx_category (shop_category_id),
+      INDEX idx_status (status)
+    )`,
+    `CREATE TABLE IF NOT EXISTS shop_categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      parent_id INT,
+      description TEXT,
       image_url VARCHAR(255),
       status ENUM('active', 'inactive') DEFAULT 'active',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (parent_id) REFERENCES shop_categories(id) ON DELETE SET NULL,
+      INDEX idx_parent_id (parent_id),
+      INDEX idx_status (status)
     )`,
     `CREATE TABLE IF NOT EXISTS ports (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -508,6 +530,39 @@ app.use('/api/admin/books-categories', booksCategories);
 app.use('/api/admin/media-categories', mediaCategories);
 app.use('/api/admin/articles-categories', articlesCategories);
 app.use('/api/admin/games-categories', gamesCategories);
+app.use('/api/admin/shop-categories', shopCategories);
+app.use('/api/shop-categories', shopCategories);
+
+// Public routers (ships and applications accessible without admin auth)
+app.get('/api/ships', async (req, res) => {
+  try {
+    const [ships] = await db.query(
+      'SELECT * FROM ships WHERE status = "active" ORDER BY created_at DESC'
+    );
+    res.json({ data: ships, msg: 'Ships fetched', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
+
+app.get('/api/ships/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [ships] = await db.query(
+      'SELECT * FROM ships WHERE id = ? AND status = "active"',
+      [id]
+    );
+    if (ships.length === 0) {
+      return res.status(404).json({ msg: 'Ship not found', type: 'error' });
+    }
+    res.json({ data: ships[0], msg: 'Ship fetched', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
+
 app.use('/api', prizewheelRouter);
 
 // Start server
