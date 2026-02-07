@@ -24,6 +24,7 @@ export default function ShopCreate() {
     model_number: "",
     color: "",
     material: "",
+    price: "",
     status: "active"
   });
   const [imageFile, setImageFile] = useState(null);
@@ -66,6 +67,7 @@ export default function ShopCreate() {
       fd.append("model_number", formData.model_number || "");
       fd.append("color", formData.color || "");
       fd.append("material", formData.material || "");
+      fd.append("price", formData.price || "");
       fd.append("status", formData.status || "active");
       if (imageFile) fd.append("image", imageFile);
 
@@ -131,6 +133,14 @@ export default function ShopCreate() {
               placeholder="Material Composition"
               value={formData.material}
               onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+            />
+            <input
+              type="number"
+              placeholder="Price"
+              step="0.01"
+              min="0"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
             />
             
             <h3>Other Information</h3>

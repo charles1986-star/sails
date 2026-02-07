@@ -51,19 +51,28 @@ export default function AdminShopCategories() {
     }
   };
 
-  // Build hierarchical display
-  const getCategoryDisplay = (cat) => {
-    if (!cat.parent_id) return cat.name;
-    const parent = categories.find(c => c.id === cat.parent_id);
-    return `${parent?.name || "—"} → ${cat.name}`;
+  // Build tree structure with depth
+  const buildTreeData = (cats) => {
+    const tree = [];
+    const buildNode = (parentId, depth = 0) => {
+      const children = cats.filter(c => c.parent_id === parentId);
+      children.forEach(child => {
+        tree.push({ ...child, depth });
+        buildNode(child.id, depth + 1);
+      });
+    };
+    buildNode(null);
+    return tree;
   };
+
+  const treeData = buildTreeData(categories);
 
   return (
     <div className="admin-container">
       {notice && <Notice message={notice.message} type={notice.type} onClose={() => setNotice(null)} />}
       
       <div className="admin-header">
-        <h1>Shop Categories</h1>
+        <h1>Shop Categories (Tree Structure)</h1>
         <button className="btn-primary" onClick={() => navigate("/admin/shop-categories/create")}>
           + New Category
         </button>
@@ -76,18 +85,19 @@ export default function AdminShopCategories() {
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Parent</th>
+                <th>Category Name</th>
                 <th>Status</th>
                 <th>Created</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {categories.map((cat) => (
+              {treeData.map((cat) => (
                 <tr key={cat.id}>
-                  <td>{cat.name}</td>
-                  <td>{categories.find(c => c.id === cat.parent_id)?.name || "—"}</td>
+                  <td style={{ paddingLeft: `${cat.depth * 30 + 16}px` }}>
+                    {cat.depth > 0 && <span style={{ color: "#999" }}>{"└─ "}</span>}
+                    <strong>{cat.name}</strong>
+                  </td>
                   <td><span className={`status-badge ${cat.status}`}>{cat.status}</span></td>
                   <td>{new Date(cat.created_at).toLocaleDateString()}</td>
                   <td className="actions">
@@ -102,7 +112,7 @@ export default function AdminShopCategories() {
               ))}
             </tbody>
           </table>
-          {categories.length === 0 && <div className="no-data">No categories found</div>}
+          {treeData.length === 0 && <div className="no-data">No categories found</div>}
         </div>
       )}
     </div>

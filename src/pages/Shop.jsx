@@ -5,66 +5,102 @@ import products from "../data/products";
 import axios from "axios";
 import "../styles/shop.css";
 
-const API_URL = "http://localhost:5000/api/admin";
+const API_URL = "http://localhost:5000/api";
 
 export default function Shop({ onBuyNow, onAddToCart }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("popular");
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [levelFilter, setLevelFilter] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [shops, setShops] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const PAGE_SIZE = 6;
 
-  // Load categories from API
+  // Load categories and shops from API
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/categories`);
-        setCategories(res?.data?.data || []);
+        // Load shop categories
+        const catRes = await axios.get(`${API_URL}/shop-categories`);
+        setCategories(catRes?.data?.data || []);
+
+        // Load shops (products)
+        const shopsRes = await axios.get(`${API_URL}/shops`);
+        if (shopsRes?.data?.data) {
+          setShops(shopsRes.data.data.filter(s => s.status === 'active'));
+        }
       } catch (err) {
-        console.error("Failed to load categories:", err);
-        // Keep local categories if API fails
+        console.error("Failed to load data:", err);
+        setShops([]);
+      } finally {
+        setLoading(false);
       }
     };
-    loadCategories();
+    loadData();
   }, []);
 
-  /** -----------------------------
-   * FILTER + SORT (Upwork order)
-   * ----------------------------- */
+  /** Build tree structure for categories */
+  const buildCategoryTree = (cats, parentId = null, depth = 0) => {
+    return cats
+      .filter(c => c.parent_id === parentId && c.status === 'active')
+      .map(cat => ({
+        ...cat,
+        depth,
+        children: buildCategoryTree(cats, cat.id, depth + 1)
+      }));
+  };
+
+  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
+
+  /** Flatten tree for filtering */
+  const flattenTree = (tree) => {
+    let flat = [];
+    const flatten = (nodes) => {
+      nodes.forEach(node => {
+        flat.push(node);
+        if (node.children?.length) flatten(node.children);
+      });
+    };
+    flatten(tree);
+    return flat;
+  };
+
+  const flatCategories = useMemo(() => flattenTree(categoryTree), [categoryTree]);
+
+  /** Filter + Sort */
   const filteredProducts = useMemo(() => {
-    let list = [...products];
+    let list = shops.filter(s => s.status === 'active');
 
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q)
+          p.name?.toLowerCase().includes(q) ||
+          p.description?.toLowerCase().includes(q) ||
+          p.sku?.toLowerCase().includes(q) ||
+          p.brand?.toLowerCase().includes(q)
       );
     }
 
     if (selectedCategory) {
-      list = list.filter((p) => p.category === selectedCategory);
-    }
-
-    if (levelFilter) {
-      list = list.filter((p) => p.priceLevel === levelFilter);
+      list = list.filter((p) => p.shop_category_id === selectedCategory);
     }
 
     list = list.filter(
-      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+      (p) => (p.price || 0) >= priceRange[0] && (p.price || 0) <= priceRange[1]
     );
 
-    if (sort === "price_asc") list.sort((a, b) => a.price - b.price);
-    if (sort === "price_desc") list.sort((a, b) => b.price - a.price);
+    if (sort === "price_asc") list.sort((a, b) => (a.price || 0) - (b.price || 0));
+    if (sort === "price_desc") list.sort((a, b) => (b.price || 0) - (a.price || 0));
+    if (sort === "popular") list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
     return list;
-  }, [search, selectedCategory, levelFilter, priceRange, sort]);
+  }, [search, selectedCategory, priceRange, sort, shops]);
 
   /** -----------------------------
    * Pagination safety
@@ -95,7 +131,7 @@ export default function Shop({ onBuyNow, onAddToCart }) {
     setSelectedCategory(null);
     setSearch("");
     setSort("popular");
-    setPriceRange([0, 1000]);
+    setPriceRange([0, 10000]);
     setLevelFilter("");
     resetPage();
   }
@@ -113,6 +149,7 @@ export default function Shop({ onBuyNow, onAddToCart }) {
           onSearch={handleSearch}
           selectedCategory={selectedCategory}
           onClearFilters={handleClear}
+          categories={categoryTree}
         />
 
         <div className="product-grid-wrap">
@@ -172,13 +209,36 @@ export default function Shop({ onBuyNow, onAddToCart }) {
 
           {/* ---------- Products ---------- */}
           <div className="product-grid">
-            {products.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                onView={(item) => setSelectedProduct(item)}
-              />
-            ))}
+            {pagedProducts.length > 0 ? (
+              pagedProducts.map((p) => (
+                <div key={p.id} className="product-card-item">
+                  <div className="product-image">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.name} />
+                    ) : (
+                      <div style={{ background: "#f0f0f0", width: "100%", height: "200px", display: "flex", alignItems: "center", justifyContent: "center" }}>No Image</div>
+                    )}
+                  </div>
+                  <div className="product-info">
+                    <h3>{p.name}</h3>
+                    {p.sku && <p><strong>SKU:</strong> {p.sku}</p>}
+                    {p.brand && <p><strong>Brand:</strong> {p.brand}</p>}
+                    {p.model_number && <p><strong>Model:</strong> {p.model_number}</p>}
+                    {p.color && <p><strong>Color:</strong> {p.color}</p>}
+                    {p.material && <p><strong>Material:</strong> {p.material}</p>}
+                    {p.description && <p className="description">{p.description.substring(0, 100)}...</p>}
+                    <div className="product-footer">
+                      <span className="price">${p.price || 0}</span>
+                      <button onClick={() => onAddToCart?.(p)} className="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px", color: "#999" }}>
+                No products found
+              </div>
+            )}
           </div>
 
           {/* ---------- Pagination ---------- */}

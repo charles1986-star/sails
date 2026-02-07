@@ -35,17 +35,21 @@ function buildCategoryTree(items) {
 }
 
 /**
- * Recursive category renderer
+ * Recursive category renderer - works with both tree structures
  */
 function CategoryItem({ node, level = 0, selected, onSelect }) {
   const [open, setOpen] = useState(level < 1);
   const hasChildren = node.children && node.children.length > 0;
+  
+  // Support both API response format (id/name) and products format (name)
+  const categoryId = node.id !== undefined ? node.id : node.name;
+  const categoryName = node.name || node.categoryPath?.[0] || "Unknown";
 
   return (
     <div className={`cat-item level-${level}`}>
       <div
-        className={`cat-row ${selected === node.name ? "active" : ""}`}
-        onClick={() => onSelect(node.name)}
+        className={`cat-row ${selected === categoryId ? "active" : ""}`}
+        onClick={() => onSelect(categoryId)}
       >
         {hasChildren && (
           <span
@@ -58,14 +62,14 @@ function CategoryItem({ node, level = 0, selected, onSelect }) {
             ▸
           </span>
         )}
-        <span className="cat-name">{node.name}</span>
+        <span className="cat-name">{categoryName}</span>
       </div>
 
       {hasChildren && open && (
         <div className="cat-children">
           {node.children.map((child) => (
             <CategoryItem
-              key={child.name}
+              key={child.id || child.name}
               node={child}
               level={level + 1}
               selected={selected}
@@ -84,13 +88,15 @@ export default function Sidebar({
   onSort,
   selectedCategory,
   onClearFilters,
+  categories = [],
 }) {
   const [open, setOpen] = useState(true);
   const [query, setQuery] = useState("");
 
-  const categories = useMemo(
-    () => buildCategoryTree(products),
-    []
+  // Use provided categories or build from products
+  const categoryTree = useMemo(
+    () => categories.length > 0 ? categories : buildCategoryTree(products),
+    [categories]
   );
 
   return (

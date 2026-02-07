@@ -142,6 +142,20 @@ async function initDatabase() {
       FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
     )`,
+    
+    `CREATE TABLE IF NOT EXISTS shop_categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      parent_id INT,
+      description TEXT,
+      image_url VARCHAR(255),
+      status ENUM('active', 'inactive') DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (parent_id) REFERENCES shop_categories(id) ON DELETE SET NULL,
+      INDEX idx_parent_id (parent_id),
+      INDEX idx_status (status)
+    )`,
     `CREATE TABLE IF NOT EXISTS shops (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -154,24 +168,12 @@ async function initDatabase() {
       model_number VARCHAR(100),
       color VARCHAR(100),
       material VARCHAR(100),
+      price DECIMAL(10, 2),
       status ENUM('active', 'inactive') DEFAULT 'active',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (shop_category_id) REFERENCES shop_categories(id) ON DELETE SET NULL,
       INDEX idx_category (shop_category_id),
-      INDEX idx_status (status)
-    )`,
-    `CREATE TABLE IF NOT EXISTS shop_categories (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(255) NOT NULL UNIQUE,
-      parent_id INT,
-      description TEXT,
-      image_url VARCHAR(255),
-      status ENUM('active', 'inactive') DEFAULT 'active',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (parent_id) REFERENCES shop_categories(id) ON DELETE SET NULL,
-      INDEX idx_parent_id (parent_id),
       INDEX idx_status (status)
     )`,
     `CREATE TABLE IF NOT EXISTS ports (
@@ -532,6 +534,20 @@ app.use('/api/admin/articles-categories', articlesCategories);
 app.use('/api/admin/games-categories', gamesCategories);
 app.use('/api/admin/shop-categories', shopCategories);
 app.use('/api/shop-categories', shopCategories);
+
+// Public shops endpoint
+app.get('/api/shops', async (req, res) => {
+  try {
+    const [shops] = await db.query(
+      'SELECT id, name, description, shop_category_id, image_url, sku, brand, model_number, color, material, price FROM shops WHERE status = ? ORDER BY created_at DESC',
+      ['active']
+    );
+    res.json({ data: shops, msg: 'Shops fetched', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
 
 // Public routers (ships and applications accessible without admin auth)
 app.get('/api/ships', async (req, res) => {
