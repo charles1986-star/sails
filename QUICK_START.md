@@ -257,12 +257,24 @@ UPDATE users SET role = 'admin' WHERE email = 'new_admin@example.com';
 
 Ship images are saved to:
 ```
-/node_server/uploads/
+/public/uploads/ship/
 ```
 
-Access via URL:
+Book covers/files are saved to:
 ```
-http://localhost:5000/uploads/filename.jpg
+/public/uploads/book/
+```
+
+Media files are saved to:
+```
+/public/uploads/media/
+```
+
+Access via URLs:
+```
+http://localhost:5000/uploads/ship/filename.jpg
+http://localhost:5000/uploads/book/filename.pdf
+http://localhost:5000/uploads/media/filename.mp4
 ```
 
 ---

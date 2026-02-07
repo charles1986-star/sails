@@ -1,8 +1,39 @@
 import express from 'express';
 import db from '../db.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Ensure public uploads directory exists for media
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'media');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext).replace(/\s+/g, '-');
+    cb(null, `${Date.now()}-${name}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowed = /\.(jpg|jpeg|png|gif|webp|mp4|mp3|wav|ogg)$/i;
+    if (allowed.test(file.originalname)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and media files are allowed'));
+    }
+  },
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit for media
+});
 
 // GET /media
 router.get('/media', verifyToken, verifyAdmin, async (req, res) => {
@@ -16,14 +47,16 @@ router.get('/media', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // POST /media
-router.post('/media', verifyToken, verifyAdmin, async (req, res) => {
+router.post('/media', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
   try {
-    const { title, description, media_type, file_url, category } = req.body;
+    const { title, description, media_type, category_id } = req.body;
     if (!title || !media_type) return res.status(400).json({ msg: 'Title and media type required', type: 'error' });
 
+    const file_url = req.file ? `/uploads/media/${req.file.filename}` : null;
+
     await db.query(
-      'INSERT INTO media (title, description, media_type, file_url, category, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [title, description, media_type, file_url, category, 'active']
+      'INSERT INTO media (title, description, media_type, file_url, category_id, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [title, description, media_type, file_url, category_id || null, 'active']
     );
 
     res.status(201).json({ msg: 'Media created successfully', type: 'success' });
@@ -34,14 +67,19 @@ router.post('/media', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // PUT /media/:id
-router.put('/media/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.put('/media/:id', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, media_type, file_url, category, status } = req.body;
+    const { title, description, media_type, category_id, status } = req.body;
+
+    let file_url = req.body.file_url;
+    if (req.file) {
+      file_url = `/uploads/media/${req.file.filename}`;
+    }
 
     await db.query(
-      'UPDATE media SET title = ?, description = ?, media_type = ?, file_url = ?, category = ?, status = ? WHERE id = ?',
-      [title, description, media_type, file_url, category, status, id]
+      'UPDATE media SET title = ?, description = ?, media_type = ?, file_url = ?, category_id = ?, status = ? WHERE id = ?',
+      [title, description, media_type, file_url, category_id || null, status || 'active', id]
     );
 
     res.json({ msg: 'Media updated successfully', type: 'success' });

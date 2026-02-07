@@ -20,12 +20,12 @@ router.get('/articles', verifyToken, verifyAdmin, async (req, res) => {
 // POST /articles
 router.post('/articles', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const { title, content, category, status } = req.body;
+    const { title, content, category_id, status } = req.body;
     if (!title || !content) return res.status(400).json({ msg: 'Title and content required', type: 'error' });
 
     await db.query(
-      'INSERT INTO articles (title, content, author_id, category, status) VALUES (?, ?, ?, ?, ?)',
-      [title, content, req.userId, category, status || 'draft']
+      'INSERT INTO articles (title, content, author_id, category_id, status) VALUES (?, ?, ?, ?, ?)',
+      [title, content, req.userId, category_id || null, status || 'draft']
     );
 
     res.status(201).json({ msg: 'Article created successfully', type: 'success' });
@@ -39,11 +39,11 @@ router.post('/articles', verifyToken, verifyAdmin, async (req, res) => {
 router.put('/articles/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, category, status } = req.body;
+    const { title, content, category_id, status } = req.body;
 
     await db.query(
-      'UPDATE articles SET title = ?, content = ?, category = ?, status = ? WHERE id = ?',
-      [title, content, category, status, id]
+      'UPDATE articles SET title = ?, content = ?, category_id = ?, status = ? WHERE id = ?',
+      [title, content, category_id || null, status, id]
     );
 
     res.json({ msg: 'Article updated successfully', type: 'success' });

@@ -7,7 +7,9 @@ import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Ensure public uploads/ship directory exists
+
+// Ensure public uploads directory exists for ships
+
 const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'ship');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -119,6 +121,7 @@ router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (r
       `INSERT INTO ships (name, imo, type, capacity_tons, start_port_id, end_port_id, ship_owner, image_url, description, last_maintenance_date, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [name, imo, type, parseInt(capacity_tons), start_port_id, end_port_id, ship_owner || null, image_url, description || null, last_maintenance_date || null, status || 'active']
+
     );
 
     const [shipData] = await db.query('SELECT * FROM ships WHERE id = ?', [result.insertId]);
@@ -133,7 +136,9 @@ router.post('/ships', verifyToken, verifyAdmin, upload.single('image'), async (r
 router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
+
     const { name, imo, type, capacity_tons, start_port_id, end_port_id, ship_owner, description, last_maintenance_date, status } = req.body;
+
 
     // Check if ship exists
     const [existing] = await db.query('SELECT * FROM ships WHERE id = ?', [id]);
@@ -149,6 +154,7 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
       }
     }
 
+
     // Verify ports exist if provided
     if (start_port_id) {
       const [startPort] = await db.query('SELECT id FROM ports WHERE id = ?', [start_port_id]);
@@ -162,6 +168,7 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
         return res.status(400).json({ msg: 'End port not found', type: 'error' });
       }
     }
+
 
     const image_url = req.file ? `/uploads/ship/${req.file.filename}` : existing[0].image_url;
 
@@ -179,6 +186,10 @@ router.put('/ships/:id', verifyToken, verifyAdmin, upload.single('image'), async
     if (type) {
       updateFields.push('type = ?');
       updateValues.push(type);
+    }
+    if (category_id !== undefined) {
+      updateFields.push('category_id = ?');
+      updateValues.push(category_id || null);
     }
     if (capacity_tons) {
       updateFields.push('capacity_tons = ?');

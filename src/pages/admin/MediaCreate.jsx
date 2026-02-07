@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -11,10 +11,30 @@ const API_URL = "http://localhost:5000/api/admin";
 export default function MediaCreate() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState({ message: "", type: "" });
-  const [formData, setFormData] = useState({ title: "", media_type: "image", category: "", description: "", status: "active" });
+  const [formData, setFormData] = useState({ 
+    title: "", 
+    media_type: "image", 
+    category_id: "", 
+    description: "", 
+    status: "active" 
+  });
   const [file, setFile] = useState(null);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/categories`, { headers: getAuthHeader() });
+      setCategories(res?.data?.data || []);
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+    }
+  };
 
   if (!user || user.role !== "admin") {
     navigate("/");
@@ -30,18 +50,21 @@ export default function MediaCreate() {
     setLoading(true);
     try {
       const headers = getAuthHeader();
+      const fd = new FormData();
       if (file) {
-        const fd = new FormData();
         fd.append("file", file);
-        Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
-        await axios.post(`${API_URL}/media`, fd, { headers });
-      } else {
-        await axios.post(`${API_URL}/media`, formData, { headers: { ...headers, "Content-Type": "application/json" } });
       }
-      setNotice({ message: "Media created", type: "success" });
+      fd.append("title", formData.title);
+      fd.append("media_type", formData.media_type);
+      fd.append("category_id", formData.category_id || "");
+      fd.append("description", formData.description);
+      fd.append("status", formData.status);
+
+      await axios.post(`${API_URL}/media`, fd, { headers });
+      setNotice({ message: "Media created successfully", type: "success" });
       setTimeout(() => navigate('/admin/media'), 800);
     } catch (err) {
-      setNotice({ message: err.response?.data?.msg || "Failed to create", type: "error" });
+      setNotice({ message: err.response?.data?.msg || "Failed to create media", type: "error" });
     }
     setLoading(false);
   };
@@ -56,16 +79,43 @@ export default function MediaCreate() {
 
         <div className="admin-form">
           <form onSubmit={handleSubmit}>
-            <input placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-            <select value={formData.media_type} onChange={(e) => setFormData({ ...formData, media_type: e.target.value })}>
+            <input 
+              placeholder="Title" 
+              value={formData.title} 
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
+              required 
+            />
+            <select 
+              value={formData.media_type} 
+              onChange={(e) => setFormData({ ...formData, media_type: e.target.value })}
+            >
               <option value="image">Image</option>
               <option value="video">Video</option>
               <option value="audio">Audio</option>
             </select>
-            <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-            <input placeholder="Category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
-            <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
+            <input 
+              type="file" 
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              accept="image/*,video/*,audio/*"
+            />
+            <select 
+              value={formData.category_id} 
+              onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+            >
+              <option value="">Select Category (Optional)</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            <textarea 
+              placeholder="Description" 
+              value={formData.description} 
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+            />
+            <select 
+              value={formData.status} 
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
