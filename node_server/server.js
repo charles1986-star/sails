@@ -590,6 +590,9 @@ app.use('/api/orders', ordersRouter);
 
 app.use('/api', prizewheelRouter);
 
+// Mount public ports routes so frontend can fetch `/api/ports-list`
+app.use('/api', portsRouter);
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
