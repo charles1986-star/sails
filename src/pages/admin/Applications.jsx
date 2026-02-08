@@ -8,7 +8,7 @@ import axios from "axios";
 import Pagination from "../../components/Pagination";
 import "../../styles/admin.css";
 
-const API_URL = "http://localhost:5000/api/admin";
+const API_URL = "http://localhost:5000/api";
 
 export default function Applications() {
   const navigate = useNavigate();
@@ -39,7 +39,10 @@ export default function Applications() {
       setLoading(true);
 
       const headers = getAuthHeader();
-      const res = await axios.get(`${API_URL}/applications`, { headers });
+      const res = await axios.get(
+        `${API_URL}/ships/applications?limit=${itemsPerPage}&offset=${(currentPage - 1) * itemsPerPage}`,
+        { headers }
+      );
 
       dispatch(setApplications(res.data.data || []));
 

@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import ShipFilterPanel from "../components/ShipFilterPanel";
 import ShipList from "../components/ShipList";
 import Pagination from "../components/Pagination";
-import shipsData from "../data/ships";
 import { setShips } from "../redux/slices/shipSlice";
 import axios from "axios";
 import "../styles/shipsearch.css";
@@ -12,67 +11,65 @@ import "../styles/shipsearch.css";
 const API_URL = "http://localhost:5000/api";
 
 export default function ShipSearch() {
-  const [filters, setFilters] = useState({ startPort: "", endPort: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });
+  const [filters, setFilters] = useState({ startPortId: "", endPortId: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });
   const [searchText, setSearchText] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
   const [currentPage, setCurrentPage] = useState(1);
+  const [ports, setPorts] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  
   const itemsPerPage = 12;
 
   const dispatch = useDispatch();
   const shipsFromStore = useSelector((state) => state.ships.ships);
 
+  // Load ports and ships from API
   useEffect(() => {
-    // Load ships from API; if fails, fall back to bundled data
-    const load = async () => {
+    const loadData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/ships`);
-        if (res?.data?.data) {
-          dispatch(setShips(res.data.data));
+        // Load active ports
+        const portsRes = await axios.get(`${API_URL}/ports-list`);
+        if (portsRes?.data?.data) {
+          setPorts(portsRes.data.data);
+        }
+
+        // Load ships
+        const shipsRes = await axios.get(`${API_URL}/ships`);
+        if (shipsRes?.data?.data) {
+          dispatch(setShips(shipsRes.data.data));
         }
       } catch (err) {
-        console.error("Failed to load ships from API:", err);
-        // keep local shipsData as fallback
-        if (!shipsFromStore || shipsFromStore.length === 0) {
-          dispatch(setShips(shipsData));
-        }
+        console.error("Failed to load data from API:", err);
+      } finally {
+        setLoadingData(false);
       }
     };
     
-    if (!shipsFromStore || shipsFromStore.length === 0) {
-      load();
-    }
-  }, [dispatch, shipsFromStore]);
+    loadData();
+  }, [dispatch]);
 
-  const sourceShips = (shipsFromStore && shipsFromStore.length) ? shipsFromStore : shipsData;
+  const sourceShips = shipsFromStore || [];
 
-  // Get unique ports and types - handle both API and local data formats
-  const ports = useMemo(() => {
-    const portSet = new Set();
-    sourceShips.forEach((s) => {
-      if (s.current_port) portSet.add(s.current_port);
-      if (s.next_port) portSet.add(s.next_port);
-      if (s.startPort) portSet.add(s.startPort);
-      if (s.endPort) portSet.add(s.endPort);
-    });
-    return Array.from(portSet);
-  }, [sourceShips]);
-
-  const typesList = useMemo(() => Array.from(new Set(sourceShips.map((s) => s.type))), [sourceShips]);
+  // Get unique types
+  const typesList = useMemo(() => Array.from(new Set(sourceShips.map((s) => s.type).filter(Boolean))), [sourceShips]);
 
   const filtered = useMemo(() => {
     let out = sourceShips.filter((s) => {
-      // Handle both API and local data formats
-      const start = s.current_port || s.startPort || '';
-      const end = s.next_port || s.endPort || '';
-      
-      if (filters.startPort && start !== filters.startPort) return false;
-      if (filters.endPort && end !== filters.endPort) return false;
+      // Filter by start port ID
+      if (filters.startPortId && s.start_port_id !== parseInt(filters.startPortId)) return false;
+      // Filter by end port ID
+      if (filters.endPortId && s.end_port_id !== parseInt(filters.endPortId)) return false;
+      // Filter by types
       if (filters.types && filters.types.length && !filters.types.includes(s.type)) return false;
-      if (filters.minCapacity && (s.capacity_tons || s.capacityTons || 0) < filters.minCapacity) return false;
+      // Filter by min capacity
+      if (filters.minCapacity && (s.capacity_tons || 0) < filters.minCapacity) return false;
       
+      // Filter by search text
       if (searchText) {
         const q = searchText.toLowerCase();
-        const hay = `${s.name} ${s.type} ${start} ${end} ${s.ship_owner || s.ownerCompany || ''}`.toLowerCase();
+        const startPortName = ports.find(p => p.id === s.start_port_id)?.name || '';
+        const endPortName = ports.find(p => p.id === s.end_port_id)?.name || '';
+        const hay = `${s.name} ${s.type} ${startPortName} ${endPortName} ${s.ship_owner || ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -83,7 +80,7 @@ export default function ShipSearch() {
     }
 
     return out;
-  }, [filters, searchText, sortBy, sourceShips]);
+  }, [filters, searchText, sortBy, sourceShips, ports]);
 
   const navigate = useNavigate();
 
@@ -97,19 +94,35 @@ export default function ShipSearch() {
 
   const clearFilter = (key) => {
     if (key === "searchText") return setSearchText("");
-    if (key === "all") return setFilters({ startPort: "", endPort: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });
+    if (key === "all") return setFilters({ startPortId: "", endPortId: "", maxDistance: null, types: [], availableAfter: null, minCapacity: null });
     setFilters((prev) => ({ ...prev, [key]: Array.isArray(prev[key]) ? [] : "" }));
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   // Paginate filtered results
   const startIdx = (currentPage - 1) * itemsPerPage;
   const paginatedShips = filtered.slice(startIdx, startIdx + itemsPerPage);
 
+  if (loadingData) {
+    return (
+      <div className="ship-search-page">
+        <div className="container">
+          <div className="no-results">Loading ships...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="ship-search-page">
       <div className="shipssearch-container container">
-        <ShipFilterPanel filters={filters} onChange={setFilters} ports={ports} types={typesList} onClear={() => clearFilter("all")} />
+        <ShipFilterPanel 
+          filters={filters} 
+          onChange={setFilters} 
+          ports={ports} 
+          types={typesList} 
+          onClear={() => clearFilter("all")} 
+        />
 
         <main className="ship-feed">
           <div className="feed-top">
@@ -131,9 +144,21 @@ export default function ShipSearch() {
             {searchText && (
               <button className="chip" onClick={() => clearFilter("searchText")}>Search: {searchText} ×</button>
             )}
-            {filters.startPort && <button className="chip" onClick={() => setFilters({ ...filters, startPort: "" })}>From: {filters.startPort} ×</button>}
-            {filters.endPort && <button className="chip" onClick={() => setFilters({ ...filters, endPort: "" })}>To: {filters.endPort} ×</button>}
-            {filters.types && filters.types.map((t) => <button key={t} className="chip" onClick={() => setFilters({ ...filters, types: filters.types.filter(x => x !== t) })}>{t} ×</button>)}
+            {filters.startPortId && (
+              <button className="chip" onClick={() => setFilters({ ...filters, startPortId: "" })}>
+                From: {ports.find(p => p.id === parseInt(filters.startPortId))?.name} ×
+              </button>
+            )}
+            {filters.endPortId && (
+              <button className="chip" onClick={() => setFilters({ ...filters, endPortId: "" })}>
+                To: {ports.find(p => p.id === parseInt(filters.endPortId))?.name} ×
+              </button>
+            )}
+            {filters.types && filters.types.map((t) => (
+              <button key={t} className="chip" onClick={() => setFilters({ ...filters, types: filters.types.filter(x => x !== t) })}>
+                {t} ×
+              </button>
+            ))}
             {(filters.maxDistance || filters.minCapacity || filters.availableAfter) && (
               <button className="chip" onClick={() => clearFilter("all")}>Clear advanced filters</button>
             )}

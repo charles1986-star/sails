@@ -22,6 +22,7 @@ import mediaCategories from './routes/media-categories.js';
 import articlesCategories from './routes/articles-categories.js';
 import gamesCategories from './routes/games-categories.js';
 import shopCategories from './routes/shop-categories.js';
+import ordersRouter from './routes/orders.js';
 
 // Create Express app
 const app = express();
@@ -244,6 +245,37 @@ async function initDatabase() {
       INDEX idx_ship_id (ship_id),
       INDEX idx_status (status),
       INDEX idx_created_at (created_at)
+    )`,
+    `CREATE TABLE IF NOT EXISTS orders (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      total_amount DECIMAL(10, 2) NOT NULL,
+      delivery_required BOOLEAN DEFAULT false,
+      delivery_address TEXT,
+      delivery_city VARCHAR(100),
+      delivery_country VARCHAR(100),
+      delivery_postal_code VARCHAR(20),
+      status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+      payment_method VARCHAR(50),
+      notes LONGTEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      INDEX idx_user_id (user_id),
+      INDEX idx_status (status),
+      INDEX idx_created_at (created_at)
+    )`,
+    `CREATE TABLE IF NOT EXISTS order_items (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      order_id INT NOT NULL,
+      shop_id INT NOT NULL,
+      quantity INT NOT NULL DEFAULT 1,
+      unit_price DECIMAL(10, 2) NOT NULL,
+      subtotal DECIMAL(10, 2) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+      FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE,
+      INDEX idx_order_id (order_id)
     )`
   ];
 
@@ -536,6 +568,7 @@ app.use('/api/admin/shop-categories', shopCategories);
 app.use('/api/shop-categories', shopCategories);
 
 // Public shops endpoint
+// Public shops endpoint (kept inline for simple listing)
 app.get('/api/shops', async (req, res) => {
   try {
     const [shops] = await db.query(
@@ -549,35 +582,11 @@ app.get('/api/shops', async (req, res) => {
   }
 });
 
-// Public routers (ships and applications accessible without admin auth)
-app.get('/api/ships', async (req, res) => {
-  try {
-    const [ships] = await db.query(
-      'SELECT * FROM ships WHERE status = "active" ORDER BY created_at DESC'
-    );
-    res.json({ data: ships, msg: 'Ships fetched', type: 'success' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: 'Server error', type: 'error' });
-  }
-});
+// Mount ships routes at /api so public endpoints like /api/ships/applications are reachable
+app.use('/api', shipsRouter);
 
-app.get('/api/ships/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [ships] = await db.query(
-      'SELECT * FROM ships WHERE id = ? AND status = "active"',
-      [id]
-    );
-    if (ships.length === 0) {
-      return res.status(404).json({ msg: 'Ship not found', type: 'error' });
-    }
-    res.json({ data: ships[0], msg: 'Ship fetched', type: 'success' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: 'Server error', type: 'error' });
-  }
-});
+// Mount orders router
+app.use('/api/orders', ordersRouter);
 
 app.use('/api', prizewheelRouter);
 

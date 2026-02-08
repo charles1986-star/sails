@@ -21,18 +21,18 @@ export default function ShipFilterPanel({ filters, onChange, ports, types, onCle
       </div>
 
       <label>Start Port</label>
-      <select value={filters.startPort} onChange={(e) => onChange({ ...filters, startPort: e.target.value })}>
+      <select value={filters.startPortId} onChange={(e) => onChange({ ...filters, startPortId: e.target.value })}>
         <option value="">Any</option>
         {ports.map((p) => (
-          <option key={p} value={p}>{p}</option>
+          <option key={p.id} value={p.id}>{p.name}</option>
         ))}
       </select>
 
       <label>End Port</label>
-      <select value={filters.endPort} onChange={(e) => onChange({ ...filters, endPort: e.target.value })}>
+      <select value={filters.endPortId} onChange={(e) => onChange({ ...filters, endPortId: e.target.value })}>
         <option value="">Any</option>
         {ports.map((p) => (
-          <option key={p} value={p}>{p}</option>
+          <option key={p.id} value={p.id}>{p.name}</option>
         ))}
       </select>
 
