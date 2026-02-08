@@ -5,6 +5,7 @@ import applicationReducer from './slices/applicationSlice';
 import transactionReducer from './slices/transactionSlice';
 import categoriesReducer from './slices/categoriesSlice';
 import portsReducer from './slices/portsSlice';
+import cartReducer from './slices/cartSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     transactions: transactionReducer,
     categories: categoriesReducer,
     ports: portsReducer,
+    cart: cartReducer,
   },
 });
 

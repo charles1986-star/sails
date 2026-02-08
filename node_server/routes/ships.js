@@ -258,22 +258,8 @@ router.delete('/ships/:id', verifyToken, verifyAdmin, async (req, res) => {
 
 // ==================== APPLICATIONS ROUTES ====================
 
-// GET all applications (admin only)
-router.get('/applications', verifyToken, verifyAdmin, async (req, res) => {
-  try {
-    const [applications] = await db.query(
-      `SELECT a.*, u.username, u.email, s.name as ship_name, s.imo, s.image_url
-       FROM applications a
-       JOIN users u ON a.user_id = u.id
-       JOIN ships s ON a.ship_id = s.id
-       ORDER BY a.created_at DESC`
-    );
-    res.json({ data: applications, msg: 'Applications fetched', type: 'success' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: 'Server error', type: 'error' });
-  }
-});
+
+
 
 // GET user's applications (authenticated users)
 router.get('/my-applications', verifyToken, async (req, res) => {
@@ -297,11 +283,14 @@ router.get('/my-applications', verifyToken, async (req, res) => {
 // POST - Create application (authenticated users)
 router.post('/applications', verifyToken, upload.single('document'), async (req, res) => {
   try {
-    const userId = req.userId;
-    const { ship_id, ship_imo, cargo_type, cargo_weight, weight_unit, preferred_loading_date, preferred_arrival_date, contact_name, contact_email, contact_phone, message } = req.body;
 
+    console.log("hello");
+    const userId = req.userId;
+    const { ship_id, ship_imo, cargo_type, cargo_weight, weight_unit, preferred_loading_date, preferred_arrival_date, contact_name, contact_phone, message } = req.body;
+
+    console.log(req.body);
     // Validation
-    if (!ship_id || !cargo_type || !cargo_weight || !contact_name || !contact_email) {
+    if (!ship_id || !cargo_type || !cargo_weight || !contact_name ) {
       return res.status(400).json({ msg: 'Missing required fields', type: 'error' });
     }
 
@@ -311,13 +300,14 @@ router.post('/applications', verifyToken, upload.single('document'), async (req,
       return res.status(404).json({ msg: 'Ship not found', type: 'error' });
     }
 
-    await db.query(
+    const [result] = await db.query(
       `INSERT INTO applications (user_id, ship_id, ship_imo, cargo_type, cargo_weight, weight_unit, preferred_loading_date, preferred_arrival_date, contact_name, contact_email, contact_phone, message, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [userId, ship_id, ship[0].imo, cargo_type, cargo_weight, weight_unit || 'tons', preferred_loading_date || null, preferred_arrival_date || null, contact_name, contact_email, contact_phone || null, message || null, 'pending']
     );
 
-    res.status(201).json({ msg: 'Application submitted successfully', type: 'success' });
+    const [created] = await db.query('SELECT * FROM applications WHERE id = ?', [result.insertId]);
+    res.status(201).json({ data: created[0], msg: 'Application submitted successfully', type: 'success' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error', type: 'error' });
@@ -356,6 +346,7 @@ router.get('/applications', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
+    console.log("hello");
 
     const [applications] = await db.query(
       `SELECT a.*, u.username, u.email, s.name as ship_name, s.imo, s.image_url
@@ -384,6 +375,59 @@ router.get('/applications', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
+// Added compatibility route: /ships/applicationsList and top-level /applicationsList
+// Some clients expect this exact path. Return same paginated payload as /ships/applications
+// router.get('/ships/applicationsList', verifyToken, verifyAdmin, async (req, res) => {
+//   try {
+//     const limit = parseInt(req.query.limit) || 10;
+//     const offset = parseInt(req.query.offset) || 0;
+
+//     const [applications] = await db.query(
+//       `SELECT a.*, u.username, u.email, s.name as ship_name, s.imo, s.image_url
+//        FROM applications a
+//        JOIN users u ON a.user_id = u.id
+//        JOIN ships s ON a.ship_id = s.id
+//        ORDER BY a.created_at DESC
+//        LIMIT ? OFFSET ?`,
+//       [limit, offset]
+//     );
+
+//     const [countResult] = await db.query('SELECT COUNT(*) as total FROM applications');
+//     const total = countResult[0].total;
+
+//     res.json({ data: applications, total, limit, offset, msg: 'Applications fetched', type: 'success' });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ msg: 'Server error', type: 'error' });
+//   }
+// });
+
+router.get('/applicationsList', verifyToken, verifyAdmin, async (req, res) => {
+  // mirror to support clients calling /api/applicationsList
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const [applications] = await db.query(
+      `SELECT a.*, u.username, u.email, s.name as ship_name, s.imo, s.image_url
+       FROM applications a
+       JOIN users u ON a.user_id = u.id
+       JOIN ships s ON a.ship_id = s.id
+       ORDER BY a.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [limit, offset]
+    );
+
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM applications');
+    const total = countResult[0].total;
+
+    res.json({ data: applications, total, limit, offset, msg: 'Applications fetched', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
+
 // GET single application (admin or user who created it)
 router.get('/applications/:id', verifyToken, async (req, res) => {
   try {
@@ -404,6 +448,111 @@ router.get('/applications/:id', verifyToken, async (req, res) => {
     }
 
     // Check authorization
+    if (app[0].user_id !== userId && req.role !== 'admin') {
+      return res.status(403).json({ msg: 'Unauthorized', type: 'error' });
+    }
+
+    res.json({ data: app[0], msg: 'Application fetched', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
+
+// --- Mirror routes under /ships/* so frontend can call /api/ships/applications ---
+
+
+// GET user's applications (authenticated users) - /ships/my-applications
+router.get('/ships/my-applications', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const [applications] = await db.query(
+      `SELECT a.*, s.name as ship_name, s.imo, s.image_url
+       FROM applications a
+       JOIN ships s ON a.ship_id = s.id
+       WHERE a.user_id = ?
+       ORDER BY a.created_at DESC`,
+      [userId]
+    );
+    res.json({ data: applications, msg: 'Your applications fetched', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
+
+// POST - Create application (authenticated users) - /ships/applications
+router.post('/ships/applications', verifyToken, upload.single('document'), async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { ship_id, ship_imo, cargo_type, cargo_weight, weight_unit, preferred_loading_date, preferred_arrival_date, contact_name, contact_email, contact_phone, message } = req.body;
+
+    if (!ship_id || !cargo_type || !cargo_weight || !contact_name ) {
+      return res.status(400).json({ msg: 'Missing required fields', type: 'error' });
+    }
+
+    const [ship] = await db.query('SELECT id, imo FROM ships WHERE id = ?', [ship_id]);
+    if (ship.length === 0) {
+      return res.status(404).json({ msg: 'Ship not found', type: 'error' });
+    }
+
+    const [result] = await db.query(
+      `INSERT INTO applications (user_id, ship_id, ship_imo, cargo_type, cargo_weight, weight_unit, preferred_loading_date, preferred_arrival_date, contact_name, contact_email, contact_phone, message, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [userId, ship_id, ship[0].imo, cargo_type, cargo_weight, weight_unit || 'tons', preferred_loading_date || null, preferred_arrival_date || null, contact_name, contact_email, contact_phone || null, message || null, 'pending']
+    );
+
+    const [created] = await db.query('SELECT * FROM applications WHERE id = ?', [result.insertId]);
+    res.status(201).json({ data: created[0], msg: 'Application submitted successfully', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
+
+// PUT - Update application status (admin only) - /ships/applications/:id
+router.put('/ships/applications/:id', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, admin_message } = req.body;
+
+    if (!status || !['pending', 'accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ msg: 'Invalid status', type: 'error' });
+    }
+
+    const [existing] = await db.query('SELECT * FROM applications WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ msg: 'Application not found', type: 'error' });
+    }
+
+    await db.query(`UPDATE applications SET status = ?, admin_message = ?, updated_at = NOW() WHERE id = ?`, [status, admin_message || null, id]);
+
+    res.json({ msg: 'Application updated successfully', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error', type: 'error' });
+  }
+});
+
+// GET single application (admin or user who created it) - /ships/applications/:id
+router.get('/ships/applications/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    const [app] = await db.query(
+      `SELECT a.*, u.username, u.email, s.name as ship_name, s.imo, s.image_url
+       FROM applications a
+       JOIN users u ON a.user_id = u.id
+       JOIN ships s ON a.ship_id = s.id
+       WHERE a.id = ?`,
+      [id]
+    );
+
+    if (app.length === 0) {
+      return res.status(404).json({ msg: 'Application not found', type: 'error' });
+    }
+
     if (app[0].user_id !== userId && req.role !== 'admin') {
       return res.status(403).json({ msg: 'Unauthorized', type: 'error' });
     }

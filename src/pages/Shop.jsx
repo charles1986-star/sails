@@ -6,6 +6,7 @@ import axios from "axios";
 import "../styles/shop.css";
 
 const API_URL = "http://localhost:5000/api";
+const API_BASE = "http://localhost:5000";
 
 export default function Shop({ onBuyNow, onAddToCart }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -214,7 +215,7 @@ export default function Shop({ onBuyNow, onAddToCart }) {
                 <div key={p.id} className="product-card-item">
                   <div className="product-image">
                     {p.image_url ? (
-                      <img src={p.image_url} alt={p.name} />
+                      <img src={API_BASE + p.image_url} alt={p.name} />
                     ) : (
                       <div style={{ background: "#f0f0f0", width: "100%", height: "200px", display: "flex", alignItems: "center", justifyContent: "center" }}>No Image</div>
                     )}

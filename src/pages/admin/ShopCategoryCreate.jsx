@@ -23,7 +23,8 @@ export default function ShopCategoryCreate() {
   const [notice, setNotice] = useState(null);
 
   useEffect(() => {
-    if (!user || user.role !== "admin") {
+    if (!user) return; // wait until auth initialized
+    if (user.role !== "admin") {
       navigate("/");
       return;
     }

@@ -14,7 +14,7 @@ export default function Applications() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const user = useSelector((state) => state.auth.user);
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
   const { applications = [] } = useSelector((state) => state.applications);
 
   const [notice, setNotice] = useState({ message: "", type: "" });
@@ -26,13 +26,16 @@ export default function Applications() {
 
   /* ================= LOAD ================= */
   useEffect(() => {
+    // Wait until auth is restored before making access decisions
+    if (!isLoggedIn && user == null) return;
+
     if (!user || user.role !== "admin") {
       navigate("/");
       return;
     }
 
     loadApplications();
-  }, [user]);
+  }, [user, isLoggedIn]);
 
   const loadApplications = async () => {
     try {
@@ -40,7 +43,7 @@ export default function Applications() {
 
       const headers = getAuthHeader();
       const res = await axios.get(
-        `${API_URL}/ships/applications?limit=${itemsPerPage}&offset=${(currentPage - 1) * itemsPerPage}`,
+        `${API_URL}/ships/applicationsList?limit=${itemsPerPage}&offset=${(currentPage - 1) * itemsPerPage}`,
         { headers }
       );
 

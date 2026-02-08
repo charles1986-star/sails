@@ -13,6 +13,7 @@ import booksRouter from './routes/books.js';
 import mediaRouter from './routes/media.js';
 import articlesRouter from './routes/articles.js';
 import shipsRouter from './routes/ships.js';
+import shipListRouter from './routes/shipList.js';
 import portsRouter from './routes/ports.js';
 import gamesRouter from './routes/games.js';
 import categoriesRouter from './routes/categories.js';
@@ -285,6 +286,20 @@ async function initDatabase() {
     } catch (err) {
       console.error("Database initialization error:", err);
     }
+  }
+
+  // Ensure shop_categories has a display_order column for ordering
+  try {
+    const [cols] = await pool.query(
+      `SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'shop_categories' AND COLUMN_NAME = 'display_order'`,
+      [pool.config.connectionConfig.database]
+    );
+    if (cols[0].cnt === 0) {
+      await pool.query(`ALTER TABLE shop_categories ADD COLUMN display_order INT DEFAULT 0`);
+    }
+  } catch (err) {
+    // non-fatal
+    console.error('Could not ensure display_order column on shop_categories:', err.message || err);
   }
 }
 
@@ -567,12 +582,16 @@ app.use('/api/admin/games-categories', gamesCategories);
 app.use('/api/admin/shop-categories', shopCategories);
 app.use('/api/shop-categories', shopCategories);
 
+import db from './db.js';
+
 // Public shops endpoint
 // Public shops endpoint (kept inline for simple listing)
 app.get('/api/shops', async (req, res) => {
   try {
+    
+    console.log("hello");
     const [shops] = await db.query(
-      'SELECT id, name, description, shop_category_id, image_url, sku, brand, model_number, color, material, price FROM shops WHERE status = ? ORDER BY created_at DESC',
+      'SELECT * FROM shops WHERE status = ? ORDER BY created_at DESC',
       ['active']
     );
     res.json({ data: shops, msg: 'Shops fetched', type: 'success' });
@@ -583,12 +602,17 @@ app.get('/api/shops', async (req, res) => {
 });
 
 // Mount ships routes at /api so public endpoints like /api/ships/applications are reachable
+
+app.use('/api/ships', shipListRouter);
+
 app.use('/api', shipsRouter);
+
+
 
 // Mount orders router
 app.use('/api/orders', ordersRouter);
 
-app.use('/api', prizewheelRouter);
+app.use('/api', prizewheelRouter);  
 
 // Mount public ports routes so frontend can fetch `/api/ports-list`
 app.use('/api', portsRouter);

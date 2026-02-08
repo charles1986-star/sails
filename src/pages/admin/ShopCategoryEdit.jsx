@@ -24,7 +24,8 @@ export default function ShopCategoryEdit() {
   const [notice, setNotice] = useState(null);
 
   useEffect(() => {
-    if (!user || user.role !== "admin") {
+    if (!user) return; // wait for auth initialization
+    if (user.role !== "admin") {
       navigate("/");
       return;
     }

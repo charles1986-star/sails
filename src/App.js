@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
+import Checkout from "./pages/Checkout";
 import Games from "./pages/Games";
 import GameDetail from "./pages/GameDetail";
 import Footer from "./components/Footer";
@@ -29,6 +30,7 @@ import SailsIntro from "./components/landing/SailsIntro";
 import ScrollToTop from "./components/ScrollToTop";
 import { initializeAuth, logoutUser } from "./utils/auth";
 import { logout, updateUserScore } from "./redux/slices/authSlice";
+import { addItem } from "./redux/slices/cartSlice";
 import useUserState from './hooks/useUserState';
 
 
@@ -49,6 +51,7 @@ import BookEdit from "./pages/admin/BookEdit";
 import AdminApplications from "./pages/admin/Applications";
 import AdminApplicationEdit from "./pages/admin/ApplicationEdit";
 import AdminShops from "./pages/admin/Shops";
+import AdminOrders from "./pages/admin/AdminOrders";
 import ShopCreate from "./pages/admin/ShopCreate";
 import ShopEdit from "./pages/admin/ShopEdit";
 import AdminShipCategories from "./pages/admin/ShopCategories";
@@ -85,25 +88,18 @@ const ProtectedRoute = ({ element, requiredRole = null, user = null, isLoggedIn 
 };
 
 function App() {
-  const dispatch = useDispatch();
   const { user, isLoggedIn } = useSelector((state) => state.auth);
   
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [cart, setCart] = useState([]);
+  const cart = useSelector((s) => s.cart.items);
   const [notice, setNotice] = useState(null);
   const [showScorePurchase, setShowScorePurchase] = useState(false);
 
-  const addToCart = (product, quantity) => {
-    const existing = cart.find((p) => p.id === product.id);
-    if (existing) {
-      const updatedCart = cart.map((p) =>
-        p.id === product.id ? { ...p, quantity: p.quantity + quantity } : p
-      );
-      setCart(updatedCart);
-    } else {
-      setCart([...cart, { ...product, quantity }]);
-    }
-    setNotice(`${product.title} x${quantity} added to cart`);
+  const dispatch = useDispatch();
+
+  const addToCart = (product, quantity = 1) => {
+    dispatch(addItem({ ...product, quantity }));
+    setNotice(`${product.title || product.name} x${quantity} added to cart`);
     setSelectedProduct(null);
   };
 
@@ -147,7 +143,7 @@ function App() {
         <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} onBuyNow={setSelectedProduct} />} />
         <Route path="/games" element={<Games />} />
         <Route path="/games/:id" element={<GameDetail />} />
-        <Route path="/cart" element={isLoggedIn ? <CartPage cart={cart} setCart={setCart} /> : <Navigate to="/" />} />
+        <Route path="/cart" element={isLoggedIn ? <CartPage /> : <Navigate to="/" />} />
         
         <Route path="/articles" element={<Articles />} />
         <Route path="/ships" element={<ShipSearch />} />
@@ -188,6 +184,7 @@ function App() {
           <Route path="articles/new" element={<ArticleCreate />} />
           <Route path="articles/:id/edit" element={<ArticleEdit />} />
           <Route path="shops" element={<AdminShops />} />
+          <Route path="orders" element={<AdminOrders />} />
           <Route path="shops/new" element={<ShopCreate />} />
           <Route path="shops/:id/edit" element={<ShopEdit />} />
           <Route path="shop-categories" element={<AdminShipCategories />} />

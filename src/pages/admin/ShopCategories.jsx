@@ -15,14 +15,20 @@ export default function AdminShopCategories() {
   const [notice, setNotice] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Check authorization
+  // FIX 1: Separate auth check from data loading
   useEffect(() => {
-    if (!user || user.role !== "admin") {
+    if (!user) return; // wait until auth is initialized
+    if (user.role !== "admin") {
       navigate("/");
-      return;
     }
-    loadCategories();
-  }, [user, navigate]);
+  }, [user, navigate]); // Only run when user or navigate changes
+
+  // FIX 2: Load categories only once on mount (when user is admin)
+  useEffect(() => {
+    if (user && user.role === "admin") {
+      loadCategories();
+    }
+  }, []); // Empty dependency array = run once on mount
 
   const loadCategories = async () => {
     setLoading(true);
@@ -65,54 +71,54 @@ export default function AdminShopCategories() {
     return tree;
   };
 
-  const treeData = buildTreeData(categories);
+  const nestedTree = (cats, parent = null) => {
+    return cats
+      .filter(c => c.parent_id === parent)
+      .map(c => ({ ...c, children: nestedTree(cats, c.id) }));
+  };
+
+  const nested = nestedTree(categories);
+
+  const TreeNode = ({ node }) => {
+    const [open, setOpen] = useState(true);
+    return (
+      <div className="tree-node">
+        <div className="tree-row">
+          {node.children.length > 0 && (
+            <button className={`caret ${open ? 'open' : ''}`} onClick={() => setOpen(!open)}>{open ? '▾' : '▸'}</button>
+          )}
+          <strong style={{ marginLeft: 8 }}>{node.name}</strong>
+          <span style={{ marginLeft: 12 }} className={`status-badge ${node.status}`}>{node.status}</span>
+          <div style={{ marginLeft: 'auto' }}>
+            <button className="btn-small" onClick={() => navigate(`/admin/shop-categories/edit/${node.id}`)}>Edit</button>
+            <button className="btn-small btn-danger" onClick={() => handleDelete(node.id)}>Delete</button>
+          </div>
+        </div>
+        {open && node.children.length > 0 && (
+          <div className="tree-children" style={{ marginLeft: 20 }}>
+            {node.children.map((ch) => (
+              <TreeNode key={ch.id} node={ch} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="admin-container">
       {notice && <Notice message={notice.message} type={notice.type} onClose={() => setNotice(null)} />}
-      
+
       <div className="admin-header">
-        <h1>Shop Categories (Tree Structure)</h1>
-        <button className="btn-primary" onClick={() => navigate("/admin/shop-categories/create")}>
-          + New Category
-        </button>
+        <h1>Shop Categories (Tree)</h1>
+        <button className="btn-primary" onClick={() => navigate("/admin/shop-categories/create")}>+ New Category</button>
       </div>
 
       {loading ? (
         <div className="loading">Loading...</div>
       ) : (
-        <div className="admin-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Category Name</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {treeData.map((cat) => (
-                <tr key={cat.id}>
-                  <td style={{ paddingLeft: `${cat.depth * 30 + 16}px` }}>
-                    {cat.depth > 0 && <span style={{ color: "#999" }}>{"└─ "}</span>}
-                    <strong>{cat.name}</strong>
-                  </td>
-                  <td><span className={`status-badge ${cat.status}`}>{cat.status}</span></td>
-                  <td>{new Date(cat.created_at).toLocaleDateString()}</td>
-                  <td className="actions">
-                    <button className="btn-small" onClick={() => navigate(`/admin/shop-categories/edit/${cat.id}`)}>
-                      Edit
-                    </button>
-                    <button className="btn-small btn-danger" onClick={() => handleDelete(cat.id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {treeData.length === 0 && <div className="no-data">No categories found</div>}
+        <div className="admin-tree">
+          {nested.length === 0 ? <div className="no-data">No categories found</div> : nested.map((n) => <TreeNode key={n.id} node={n} />)}
         </div>
       )}
     </div>

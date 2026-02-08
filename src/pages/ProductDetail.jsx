@@ -1,88 +1,116 @@
-import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import products from "../data/products";
 import "../styles/productDetail.css";
 
+const API_URL = "http://localhost:5000/api";
+
 export default function ProductDetail({ onBuyNow, onAddToCart }) {
   const { id } = useParams();
-  const product = products.find((p) => String(p.id) === id);
+  const navigate = useNavigate();
 
-  // ---------- STATE ----------
+  const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [loadingBuy, setLoadingBuy] = useState(false);
   const [added, setAdded] = useState(false);
+  const [error, setError] = useState(null);
 
-  if (!product) {
-    return <div className="no-results">Product not found</div>;
-  }
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${API_URL}/shops/${id}`);
+        if (!mounted) return;
+        if (res?.data?.data) {
+          setProduct(res.data.data);
+        } else {
+          // fallback to local product list
+          const local = products.find((p) => String(p.id) === String(id));
+          setProduct(local || null);
+        }
+      } catch (err) {
+        // fallback to local product list
+        const local = products.find((p) => String(p.id) === String(id));
+        if (local) {
+          setProduct(local);
+        } else {
+          setError(err.response?.data?.msg || "Product not found");
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  if (loading) return <div className="no-results">Loading product...</div>;
+  if (error) return <div className="no-results">{error}</div>;
+  if (!product) return <div className="no-results">Product not found</div>;
 
   const maxStock = product.stock ?? 99;
   const isQtyValid = qty > 0 && qty <= maxStock;
 
-  // ---------- HANDLERS ----------
   const handleBuyNow = () => {
     if (!isQtyValid) return;
-
     setLoadingBuy(true);
 
-    // Simulate Stripe checkout
+    // In future: call backend to create order / payment session
     setTimeout(() => {
       setLoadingBuy(false);
-
-      // REAL WORLD:
-      // window.location.href = session.url;
-      alert("Redirecting to Stripe checkout...");
-    }, 1500);
+      alert("Redirecting to checkout (simulated)");
+    }, 1200);
   };
 
   const handleAddToCart = () => {
     if (!isQtyValid) return;
-
     onAddToCart && onAddToCart(product, qty);
     setAdded(true);
-
-    setTimeout(() => setAdded(false), 2000);
+    setTimeout(() => setAdded(false), 1500);
   };
 
   return (
     <div className="product-detail-page">
       <div className="container detail-grid">
-
-        {/* ---------- LEFT ---------- */}
         <div className="detail-left">
           <div className="detail-card">
             <div className="product-image-large">
-              {product.image ? (
-                <img src={product.image} alt={product.title} />
+              {product.image_url || product.image ? (
+                <img src={product.image_url || product.image} alt={product.name || product.title} />
               ) : (
                 <div className="image-placeholder">🛠</div>
               )}
             </div>
 
-            <h1 className="product-title">{product.title}</h1>
-            <div className="product-category">{product.category}</div>
+            <h1 className="product-title">{product.name || product.title}</h1>
+            {product.category && <div className="product-category">{product.category}</div>}
 
             <p className="product-description">{product.description}</p>
 
             <div className="product-meta">
               <div><strong>Delivery:</strong> {product.deliveryTime || "3–5 days"}</div>
               <div><strong>Revisions:</strong> {product.revisions || "Unlimited"}</div>
-              <div><strong>Experience:</strong> {product.priceLevel}</div>
+              <div><strong>Experience:</strong> {product.priceLevel || "Standard"}</div>
               <div><strong>Stock:</strong> {maxStock}</div>
             </div>
           </div>
         </div>
 
-        {/* ---------- RIGHT (PURCHASE CARD) ---------- */}
         <aside className="detail-right">
           <div className="purchase-card">
-
             <div className="price-row">
               <span className="price-label">Price</span>
-              <span className="price-value">${product.price}</span>
+              <span className="price-value">${product.price || 0}</span>
             </div>
 
-            {/* Quantity */}
             <div className="qty-row">
               <label>Quantity</label>
               <input
@@ -94,7 +122,6 @@ export default function ProductDetail({ onBuyNow, onAddToCart }) {
               />
             </div>
 
-            {/* Actions */}
             <div className="action-buttons">
               <button
                 className="btn-buy"
@@ -115,14 +142,12 @@ export default function ProductDetail({ onBuyNow, onAddToCart }) {
             </div>
 
             <div className="purchase-note">
-              ✔ Stripe secure payment <br />
+              ✔ Secure payment <br />
               ✔ Instant checkout <br />
               ✔ 24/7 support
             </div>
-
           </div>
         </aside>
-
       </div>
     </div>
   );

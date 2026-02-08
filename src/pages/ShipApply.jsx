@@ -152,13 +152,11 @@ export default function ShipApply() {
       };
       
       const res = await axios.post(`${API_URL}/ships/applications`, payload, { headers: getAuthHeader() });
-      
-      if (res?.data?.data || res?.data?.msg) {
-        setSubmitted({
-          id: res.data.data?.id || `app_${Date.now()}`,
-          status: 'pending'
-        });
-        dispatch(addApplication(res.data.data));
+
+      if (res?.data?.data) {
+        const app = res.data.data;
+        setSubmitted(app);
+        dispatch(addApplication(app));
         setNotice({ type: "success", msg: "Application submitted successfully!" });
         // Redirect after showing success
         setTimeout(() => navigate('/applications'), 2500);
@@ -265,7 +263,7 @@ export default function ShipApply() {
               <div className="submitted-card">
                 <h3>Application Submitted</h3>
                 <p>Your application <strong>{submitted.id}</strong> is now <strong>{submitted.status}</strong>.</p>
-                <p>We sent a confirmation to <strong>{submitted.form.contactEmail}</strong>.</p>
+                <p>We sent a confirmation to <strong>{submitted.contact_email || submitted.contactEmail || submitted.contactEmailAddress || ''}</strong>.</p>
                 <div className="form-actions">
                   <button className="view-btn fixed-width" onClick={() => navigate(`/ships/${ship.id}`)}>Back to ship</button>
                 </div>

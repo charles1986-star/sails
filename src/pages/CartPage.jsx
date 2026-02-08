@@ -1,76 +1,69 @@
-import "../styles/cart.css";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateQuantity, removeItem } from '../redux/slices/cartSlice';
+import '../styles/cart.css';
 
-export default function CartPage({ cart, setCart }) {
-  const handleQuantityChange = (id, quantity) => {
-    const updated = cart.map((p) =>
-      p.id === id ? { ...p, quantity: Math.max(1, quantity) } : p
-    );
-    setCart(updated);
+export default function CartPage() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cart = useSelector((s) => s.cart.items || []);
+
+  const updateQty = (id, qty) => {
+    const q = Math.max(0, Number(q) || 0);
+    if (q <= 0) {
+      dispatch(removeItem(id));
+    } else {
+      dispatch(updateQuantity({ id, quantity: q }));
+    }
   };
 
-  const handleRemove = (id) => {
-    setCart(cart.filter((p) => p.id !== id));
+  const remove = (id) => {
+    dispatch(removeItem(id));
   };
 
-  const totalPrice = cart
-    .reduce((sum, p) => sum + parseFloat(p.price.replace("$", "")) * p.quantity, 0)
-    .toFixed(2);
-
-  const handleCheckout = () => {
-    alert("Purchase completed! Total: $" + totalPrice);
-    setCart([]); // clear cart after purchase
-  };
-
-  if (cart.length === 0) return <h2 style={{ padding: "40px" }}>Cart is empty</h2>;
+  const total = cart.reduce((s, it) => s + (it.price || 0) * (it.quantity || 1), 0);
 
   return (
-    <div className="cart-container">
-      <h1>Shopping Cart</h1>
-      <table className="cart-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cart.map((p) => {
-            const priceNumber = parseFloat(p.price.replace("$", ""));
-            return (
-              <tr key={p.id}>
-                <td>{p.title}</td>
-                <td>${priceNumber.toFixed(2)}</td>
-                <td>
-                  <input
-                    type="number"
-                    min="1"
-                    value={p.quantity}
-                    onChange={(e) =>
-                      handleQuantityChange(p.id, parseInt(e.target.value))
-                    }
-                  />
-                </td>
-                <td>${(priceNumber * p.quantity).toFixed(2)}</td>
-                <td>
-                  <button className="btn-remove" onClick={() => handleRemove(p.id)}>
-                    ✕
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="cart-page container">
+      <h1>Your Cart</h1>
 
-      <div className="cart-footer">
-        <h3>Total: ${totalPrice}</h3>
-        <button className="btn-primary" onClick={handleCheckout}>
-          Checkout
-        </button>
-      </div>
+      {cart.length === 0 ? (
+        <div className="no-results">Your cart is empty.</div>
+      ) : (
+        <div className="cart-grid">
+          <div className="cart-items">
+            {cart.map((it) => (
+              <div className="cart-item" key={it.id}>
+                <div className="ci-left">
+                  <div className="ci-image">
+                    {it.image_url ? <img src={it.image_url} alt={it.name} /> : <div className="image-placeholder">No Image</div>}
+                  </div>
+                  <div className="ci-meta">
+                    <h3>{it.name || it.title}</h3>
+                    <div className="ci-sku">{it.sku}</div>
+                  </div>
+                </div>
+
+                <div className="ci-right">
+                  <div className="ci-price">${it.price || 0}</div>
+                  <input type="number" min="1" value={it.quantity} onChange={(e) => updateQty(it.id, e.target.value)} />
+                  <button className="btn-remove" onClick={() => remove(it.id)}>Remove</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <aside className="cart-summary">
+            <h3>Summary</h3>
+            <div className="summary-row"><span>Items</span><span>{cart.length}</span></div>
+            <div className="summary-row"><strong>Total</strong><strong>${total.toFixed(2)}</strong></div>
+            <div className="summary-actions">
+              <button className="btn-primary" onClick={() => navigate('/checkout')}>Proceed to Checkout</button>
+            </div>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }
