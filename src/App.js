@@ -34,6 +34,7 @@ import { addItem } from "./redux/slices/cartSlice";
 import useUserState from './hooks/useUserState';
 
 
+
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminTransactions from "./pages/admin/Transactions";
@@ -48,6 +49,7 @@ import ArticleCreate from "./pages/admin/ArticleCreate";
 import ArticleEdit from "./pages/admin/ArticleEdit";
 import BookCreate from "./pages/admin/BookCreate";
 import BookEdit from "./pages/admin/BookEdit";
+import AdminBooksAnalytics from "./pages/admin/AdminBooksAnalytics";
 import AdminApplications from "./pages/admin/Applications";
 import AdminApplicationEdit from "./pages/admin/ApplicationEdit";
 import AdminShops from "./pages/admin/Shops";
@@ -156,6 +158,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/my-account" element={<MyAccount />} />
+        <Route path="/shops/:id" element={<ProductDetail />} />
         
         {/* Admin routes */}
         {/* <Route path="/admin/transactions" element={<ProtectedRoute element={<AdminTransactions />} requiredRole="admin" />} />
@@ -175,6 +178,7 @@ function App() {
           <Route path="transactions/new" element={<TransactionCreate />} />
           <Route path="transactions/:id/edit" element={<TransactionEdit />} />
           <Route path="books" element={<AdminBooks />} />
+          <Route path="books/analytics" element={<AdminBooksAnalytics />} />
           <Route path="books/new" element={<BookCreate />} />
           <Route path="books/:id/edit" element={<BookEdit />} />
           <Route path="media" element={<AdminMedia />} />
@@ -214,6 +218,7 @@ function App() {
           <Route path="games" element={<AdminGames />} />
           <Route path="games/new" element={<GameCreate />} />
           <Route path="games/:id/edit" element={<GameEdit />} />
+         
         </Route>
       </Routes>
 

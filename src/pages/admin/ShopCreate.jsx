@@ -16,7 +16,7 @@ export default function ShopCreate() {
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
-    owner_id: "",
+    contact_name: "",
     shop_category_id: "",
     description: "",
     sku: "",
@@ -60,7 +60,7 @@ export default function ShopCreate() {
       const fd = new FormData();
       fd.append("name", formData.name);
       fd.append("description", formData.description || "");
-      fd.append("owner_id", formData.owner_id || "");
+      fd.append("contact_name", formData.contact_name || "");
       fd.append("shop_category_id", formData.shop_category_id || "");
       fd.append("sku", formData.sku || "");
       fd.append("brand", formData.brand || "");
@@ -82,101 +82,162 @@ export default function ShopCreate() {
 
   return (
     <div className="admin-page">
-      <Notice message={notice.message} type={notice.type} onClose={() => setNotice({ message: "", type: "" })} />
-      <div className="admin-container">
-        <div className="admin-header-row">
-          <h1>Create Shop Product</h1>
-          <button onClick={() => navigate('/admin/shops')}>← Back</button>
-        </div>
+    <Notice message={notice.message} type={notice.type} onClose={() => setNotice({ message: "", type: "" })} />
+    <div className="admin-container">
+      <div className="admin-header-row">
+        <h1>Create Shop Product</h1>
+        <button onClick={() => navigate('/admin/shops')}>← Back</button>
+      </div>
 
-        <div className="admin-form">
-          <form onSubmit={handleSubmit}>
-            <h3>Basic Information</h3>
-            <input
-              placeholder="Product Name *"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
-            <select
-              value={formData.shop_category_id}
-              onChange={(e) => setFormData({ ...formData, shop_category_id: e.target.value })}
-            >
-              <option value="">Select Category</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-            
-            <h3>Product Details</h3>
-            <input
-              placeholder="SKU / Product ID"
-              value={formData.sku}
-              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-            />
-            <input
-              placeholder="Brand / Manufacturer"
-              value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-            />
-            <input
-              placeholder="Model Number / Series"
-              value={formData.model_number}
-              onChange={(e) => setFormData({ ...formData, model_number: e.target.value })}
-            />
-            <input
-              placeholder="Color / Material / Finish"
-              value={formData.color}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-            />
-            <input
-              placeholder="Material Composition"
-              value={formData.material}
-              onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-            />
-            <input
-              type="number"
-              placeholder="Price"
-              step="0.01"
-              min="0"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-            />
-            
-            <h3>Other Information</h3>
-            <textarea
-              placeholder="Description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={4}
-            />
-            <input
-              placeholder="Owner ID"
-              value={formData.owner_id}
-              onChange={(e) => setFormData({ ...formData, owner_id: e.target.value })}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files[0])}
-            />
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-
-            <div className="form-buttons">
-              <button type="submit" disabled={loading}>{loading ? "Saving..." : "Create Product"}</button>
-              <button type="button" className="btn-cancel" onClick={() => navigate('/admin/shops')} disabled={loading}>
-                Cancel
-              </button>
+      <div className="admin-form">
+        <form onSubmit={handleSubmit}>
+          <h3>Basic Information</h3>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Product Name *</label>
+              <input
+                placeholder="Product Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
             </div>
-          </form>
-        </div>
+
+            <div className="form-group">
+              <label>Category</label>
+              <select
+                value={formData.shop_category_id}
+                onChange={(e) => setFormData({ ...formData, shop_category_id: e.target.value })}
+              >
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <h3>Product Details</h3>
+          <div className="form-row">
+            <div className="form-group">
+              <label>SKU / Product ID</label>
+              <input
+                placeholder="SKU / Product ID"
+                value={formData.sku}
+                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label>Brand / Manufacturer</label>
+              <input
+                placeholder="Brand"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Model Number / Series</label>
+              <input
+                placeholder="Model Number"
+                value={formData.model_number}
+                onChange={(e) => setFormData({ ...formData, model_number: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label>Color</label>
+              <input
+                placeholder="Color"
+                value={formData.color}
+                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Material</label>
+              <input
+                placeholder="Material"
+                value={formData.material}
+                onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label>Price ($)</label>
+              <input
+                type="number"
+                placeholder="Price"
+                min="0"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <h3>Other Information</h3>
+          <div className="form-row">
+            <div className="form-group full-width">
+              <label>Description</label>
+              <textarea
+                placeholder="Description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Owner ID</label>
+              <input
+                placeholder="Owner ID"
+                value={formData.contact_name}
+                onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label>Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group full-width">
+              <label>Product Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files[0])}
+              />
+              {imageFile && (
+                <div className="image-preview">
+                  <img src={URL.createObjectURL(imageFile)} alt="preview" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-buttons">
+            <button type="submit" disabled={loading}>{loading ? "Saving..." : "Create Product"}</button>
+            <button type="button" className="btn-cancel" onClick={() => navigate('/admin/shops')} disabled={loading}>
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
+
   );
 }

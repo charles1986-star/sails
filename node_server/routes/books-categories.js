@@ -127,3 +127,34 @@ router.delete("/:id", verifyToken, verifyAdmin, async (req, res) => {
 });
 
 export default router;
+
+// Reorder endpoint: accepts array of { id, parent_id, display_order }
+router.post('/reorder', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const items = req.body;
+    if (!Array.isArray(items)) return res.status(400).json({ msg: 'Invalid payload', type: 'error' });
+
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      for (const it of items) {
+        const id = parseInt(it.id);
+        const parent_id = it.parent_id ? parseInt(it.parent_id) : null;
+        const display_order = parseInt(it.display_order) || 0;
+        if (!id) continue;
+        await conn.query('UPDATE categories SET parent_id = ?, display_order = ? WHERE id = ?', [parent_id, display_order, id]);
+      }
+      await conn.commit();
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
+
+    res.json({ msg: 'Reorder saved', type: 'success' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Failed to reorder', type: 'error' });
+  }
+});

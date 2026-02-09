@@ -17,12 +17,23 @@ export default function BookEdit() {
   const [notice, setNotice] = useState({ message: "", type: "" });
   const [formData, setFormData] = useState({ 
     title: "", 
+    subtitle: "",
     author: "", 
     price: "", 
     category_id: "", 
     description: "", 
+    tags: "",
+    is_free: false,
+    score_cost: 0,
+    discount_price: "",
+    access_level: 'public',
+    max_downloads: 0,
+    expire_days_after_purchase: 0,
     cover_image: null,
-    status: "active" 
+    main_file: null,
+    preview_file: null,
+    thumbnail: null,
+    status: "draft" 
   });
 
   useEffect(() => {
@@ -48,7 +59,27 @@ export default function BookEdit() {
     try {
       const headers = getAuthHeader();
       const res = await axios.get(`${API_URL}/books/${id}`, { headers });
-      setFormData(res.data.data || {});
+      const d = res.data.data || {};
+      setFormData({
+        title: d.title || '',
+        subtitle: d.subtitle || '',
+        author: d.author || '',
+        price: d.price || '',
+        category_id: d.category_id || '',
+        description: d.description || '',
+        tags: d.tags || '',
+        is_free: !!d.is_free,
+        score_cost: d.score_cost || 0,
+        discount_price: d.discount_price || '',
+        access_level: d.access_level || 'public',
+        max_downloads: d.max_downloads || 0,
+        expire_days_after_purchase: d.expire_days_after_purchase || 0,
+        cover_image: d.cover_image || null,
+        main_file: d.file_url || null,
+        preview_file: d.preview_url || null,
+        thumbnail: d.thumbnail_url || null,
+        status: d.status || 'draft'
+      });
     } catch (err) {
       setNotice({ message: err.response?.data?.msg || "Failed to load book", type: "error" });
     }
@@ -61,14 +92,23 @@ export default function BookEdit() {
     try {
       const formPayload = new FormData();
       formPayload.append('title', formData.title);
-      formPayload.append('author', formData.author);
-      formPayload.append('price', formData.price);
+      formPayload.append('subtitle', formData.subtitle);
+      formPayload.append('author_name', formData.author);
+      formPayload.append('price', formData.price || 0);
       formPayload.append('category_id', formData.category_id || '');
       formPayload.append('description', formData.description);
+      formPayload.append('tags', formData.tags);
+      formPayload.append('is_free', formData.is_free ? 'true' : 'false');
+      formPayload.append('score_cost', formData.score_cost || 0);
+      formPayload.append('discount_price', formData.discount_price || '');
+      formPayload.append('access_level', formData.access_level || 'public');
+      formPayload.append('max_downloads', formData.max_downloads || 0);
+      formPayload.append('expire_days_after_purchase', formData.expire_days_after_purchase || 0);
       formPayload.append('status', formData.status);
-      if (formData.cover_image && typeof formData.cover_image !== 'string') {
-        formPayload.append('cover_image', formData.cover_image);
-      }
+      if (formData.cover_image && typeof formData.cover_image !== 'string') formPayload.append('cover_image', formData.cover_image);
+      if (formData.main_file && typeof formData.main_file !== 'string') formPayload.append('main_file', formData.main_file);
+      if (formData.preview_file && typeof formData.preview_file !== 'string') formPayload.append('preview_file', formData.preview_file);
+      if (formData.thumbnail && typeof formData.thumbnail !== 'string') formPayload.append('thumbnail', formData.thumbnail);
 
       const headers = getAuthHeader();
       await axios.put(`${API_URL}/books/${id}`, formPayload, { headers });

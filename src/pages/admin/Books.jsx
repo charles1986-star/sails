@@ -15,6 +15,11 @@ export default function Books() {
   const [notice, setNotice] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [books, setBooks] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [query, setQuery] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [freeFilter, setFreeFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -26,12 +31,26 @@ export default function Books() {
     loadBooks();
   }, [user, navigate]);
 
-  const loadBooks = async () => {
+  useEffect(() => {
+    // reload when filters or page change
+    loadBooks();
+  }, [currentPage]);
+
+  const loadBooks = async (page = currentPage) => {
     setLoading(true);
     try {
       const headers = getAuthHeader();
-      const response = await axios.get(`${API_URL}/books`, { headers });
-      setBooks(response.data.data);
+      const params = {
+        q: query || undefined,
+        category_id: categoryId || undefined,
+        free: freeFilter || undefined,
+        status: statusFilter || undefined,
+        limit: itemsPerPage,
+        offset: (page - 1) * itemsPerPage,
+      };
+      const response = await axios.get(`${API_URL}/books`, { headers, params });
+      setBooks(response.data.data || []);
+      setTotal(response.data.total || 0);
     } catch (error) {
       setNotice({
         message: error.response?.data?.msg || "Failed to load books",
@@ -47,19 +66,18 @@ export default function Books() {
     try {
       const headers = getAuthHeader();
       await axios.delete(`${API_URL}/books/${id}`, { headers });
-      setNotice({ message: "Book deleted successfully!", type: "success" });
+      setNotice({ message: "Book archived successfully!", type: "success" });
       setTimeout(() => loadBooks(), 800);
     } catch (error) {
       setNotice({
-        message: error.response?.data?.msg || "Failed to delete",
+        message: error.response?.data?.msg || "Failed to archive",
         type: "error",
       });
     }
     setLoading(false);
   };
 
-  const totalPages = Math.ceil(books.length / itemsPerPage);
-  const paginated = books.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(total / itemsPerPage);
 
   return (
     <div className="admin-page">
@@ -74,7 +92,26 @@ export default function Books() {
           <h1>Books</h1>
           <div>
             <button className="btn-primary" onClick={() => navigate('/admin/books/new')}>Add Book</button>
+            <button className="btn-secondary" onClick={() => navigate('/admin/books/analytics')}>Analytics</button>
           </div>
+        </div>
+
+        <div className="admin-filters">
+          <input placeholder="Search title or author" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <select value={freeFilter} onChange={(e) => setFreeFilter(e.target.value)}>
+            <option value="">All</option>
+            <option value="true">Free</option>
+            <option value="false">Paid</option>
+          </select>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">Any status</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="archived">Archived</option>
+          </select>
+          <button onClick={() => { setCurrentPage(1); loadBooks(1); }}>Apply</button>
         </div>
 
         <div className="admin-table-container">
@@ -91,22 +128,22 @@ export default function Books() {
               </tr>
             </thead>
             <tbody>
-              {paginated.length === 0 ? (
+              {books.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="text-center">No books found</td>
                 </tr>
               ) : (
-                paginated.map((item) => (
+                books.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.title}</td>
                     <td>{item.author}</td>
-                    <td>${item.price?.toFixed(2)}</td>
+                    <td>{item.is_free ? 'Free' : item.price ? `$${parseFloat(item.price).toFixed(2)}` : '-'}</td>
                     <td>{item.category || "-"}</td>
                     <td>{item.status}</td>
                     <td>
                       <button className="btn-edit" onClick={() => navigate(`/admin/books/${item.id}/edit`)} disabled={loading}>Edit</button>
-                      <button className="btn-delete" onClick={() => handleDelete(item.id)} disabled={loading}>Delete</button>
+                      <button className="btn-delete" onClick={() => handleDelete(item.id)} disabled={loading}>Archive</button>
                     </td>
                   </tr>
                 ))
@@ -114,7 +151,7 @@ export default function Books() {
             </tbody>
           </table>
 
-          <Pagination page={currentPage} totalPages={totalPages} onChange={(p) => setCurrentPage(p)} />
+          <Pagination page={currentPage} totalPages={totalPages} onChange={(p) => { setCurrentPage(p); loadBooks(p); }} />
         </div>
       </div>
     </div>

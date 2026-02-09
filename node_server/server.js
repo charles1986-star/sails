@@ -163,7 +163,7 @@ async function initDatabase() {
       name VARCHAR(255) NOT NULL,
       description TEXT,
       shop_category_id INT,
-      owner_id INT,
+      contact_name INT,
       image_url VARCHAR(255),
       sku VARCHAR(100),
       brand VARCHAR(100),
@@ -173,7 +173,6 @@ async function initDatabase() {
       price DECIMAL(10, 2),
       status ENUM('active', 'inactive') DEFAULT 'active',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (shop_category_id) REFERENCES shop_categories(id) ON DELETE SET NULL,
       INDEX idx_category (shop_category_id),
       INDEX idx_status (status)
@@ -300,6 +299,102 @@ async function initDatabase() {
   } catch (err) {
     // non-fatal
     console.error('Could not ensure display_order column on shop_categories:', err.message || err);
+  }
+
+  // Ensure categories table has display_order for ordering
+  try {
+    const [cols2] = await pool.query(
+      `SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'categories' AND COLUMN_NAME = 'display_order'`,
+      [pool.config.connectionConfig.database]
+    );
+    if (cols2[0].cnt === 0) {
+      await pool.query(`ALTER TABLE categories ADD COLUMN display_order INT DEFAULT 0`);
+    }
+  } catch (err) {
+    console.error('Could not ensure display_order column on categories:', err.message || err);
+  }
+
+  // Ensure books table has extended columns required for digital library
+  try {
+    const dbName = pool.config.connectionConfig.database;
+    const check = async (table, column, colDef) => {
+      const [r] = await pool.query(
+        `SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+        [dbName, table, column]
+      );
+      if (r[0].cnt === 0) {
+        await pool.query(`ALTER TABLE ${table} ADD COLUMN ${colDef}`);
+      }
+    };
+
+    await check('books', 'content_type', "VARCHAR(20) DEFAULT 'pdf'");
+    await check('books', 'file_url', "VARCHAR(255)");
+    await check('books', 'preview_url', "VARCHAR(255)");
+    await check('books', 'thumbnail_url', "VARCHAR(255)");
+    await check('books', 'file_size', "BIGINT DEFAULT 0");
+    await check('books', 'page_count', "INT DEFAULT 0");
+    await check('books', 'duration_minutes', "INT DEFAULT 0");
+    await check('books', 'is_free', "TINYINT(1) DEFAULT 1");
+    await check('books', 'currency', "VARCHAR(10) DEFAULT 'USD'");
+    await check('books', 'score_cost', "INT DEFAULT 0");
+    await check('books', 'discount_price', "DECIMAL(10,2) DEFAULT NULL");
+    await check('books', 'subscription_required', "TINYINT(1) DEFAULT 0");
+    await check('books', 'access_level', "VARCHAR(20) DEFAULT 'public'");
+    await check('books', 'max_downloads', "INT DEFAULT 0");
+    await check('books', 'expire_days_after_purchase', "INT DEFAULT 0");
+    await check('books', 'view_count', "INT DEFAULT 0");
+    await check('books', 'download_count', "INT DEFAULT 0");
+    await check('books', 'purchase_count', "INT DEFAULT 0");
+    await check('books', 'average_rating', "DECIMAL(3,2) DEFAULT 0");
+    await check('books', 'is_featured', "TINYINT(1) DEFAULT 0");
+    await check('books', 'is_popular', "TINYINT(1) DEFAULT 0");
+    await check('books', 'is_active', "TINYINT(1) DEFAULT 1");
+    await check('books', 'tags', "VARCHAR(255) DEFAULT NULL");
+  } catch (err) {
+    console.error('Could not ensure extended books columns:', err.message || err);
+  }
+
+  // Ensure a book_events table for time-series tracking exists
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS book_events (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        book_id INT NOT NULL,
+        user_id INT,
+        event_type ENUM('download','purchase') NOT NULL,
+        amount DECIMAL(10,2) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_book_id (book_id),
+        INDEX idx_user_id (user_id),
+        INDEX idx_event_type (event_type),
+        FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+  } catch (err) {
+    console.error('Could not ensure book_events table:', err.message || err);
+  }
+
+  // Ensure subtitle column exists
+  try {
+    const [sub] = await pool.query(
+      `SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'books' AND COLUMN_NAME = 'subtitle'`,
+      [pool.config.connectionConfig.database]
+    );
+    if (sub[0].cnt === 0) {
+      await pool.query(`ALTER TABLE books ADD COLUMN subtitle VARCHAR(255) DEFAULT NULL`);
+    }
+  } catch (err) {
+    console.error('Could not ensure subtitle column on books:', err.message || err);
+  }
+
+  // Extend books.status enum to include draft, published, archived if not already
+  try {
+    // Attempt to modify the column to include new values; keep default 'active' if present
+    await pool.query(`ALTER TABLE books MODIFY COLUMN status ENUM('draft','published','active','inactive','archived') DEFAULT 'active'`);
+  } catch (err) {
+    // Not fatal; log and continue
+    console.error('Could not modify books.status enum:', err.message || err);
   }
 }
 
