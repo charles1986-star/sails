@@ -55,33 +55,83 @@ export default function Checkout() {
   };
 
   return (
-    <div className="checkout-page container">
-      <h1>Checkout</h1>
-      {error && <div className="error">{error}</div>}
+     <div className="checkout-page">
+      <div className="checkout-container">
+        <h1 className="checkout-title">Checkout</h1>
 
-      <div className="checkout-grid">
-        <div className="checkout-form">
-          <label>
-            <input type="checkbox" checked={deliveryRequired} onChange={(e) => setDeliveryRequired(e.target.checked)} /> Delivery required
-          </label>
+        {error && <div className="checkout-error">{error}</div>}
 
-          {deliveryRequired && (
-            <div className="delivery-fields">
-              <input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
-              <input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-              <input placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} />
-              <input placeholder="Postal code" value={postal} onChange={(e) => setPostal(e.target.value)} />
+        <div className="checkout-grid">
+          {/* ================= LEFT FORM ================= */}
+          <div className="checkout-card">
+            <h2 className="card-title">Delivery Options</h2>
+
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={deliveryRequired}
+                onChange={(e) => setDeliveryRequired(e.target.checked)}
+              />
+              <span>Delivery required</span>
+            </label>
+
+            {deliveryRequired && (
+              <div className="delivery-grid">
+                <input
+                  placeholder="Address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+                <input
+                  placeholder="City"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+                <input
+                  placeholder="Country"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                />
+                <input
+                  placeholder="Postal code"
+                  value={postal}
+                  onChange={(e) => setPostal(e.target.value)}
+                />
+              </div>
+            )}
+
+            <button
+              className="checkout-btn"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "Place Order"}
+            </button>
+          </div>
+
+          {/* ================= RIGHT SUMMARY ================= */}
+          <aside className="checkout-summary">
+            <div className="summary-card">
+              <h3>Order Summary</h3>
+
+              <div className="summary-items">
+                {cart.map((item) => (
+                  <div key={item.id} className="summary-row">
+                    <span>{item.name}</span>
+                    <span>
+                      ${item.price} × {item.quantity}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="summary-total">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
             </div>
-          )}
-
-          <button className="btn-primary" onClick={handleSubmit} disabled={loading}>{loading ? 'Processing...' : 'Place Order'}</button>
+          </aside>
         </div>
-
-        <aside className="checkout-summary">
-          <h3>Order Summary</h3>
-          <div>Items: {cart.length}</div>
-          <div>Total: ${total.toFixed(2)}</div>
-        </aside>
       </div>
     </div>
   );

@@ -1,0 +1,174 @@
+/* =========================
+   Layout
+========================= */
+
+.checkout-page {
+  background: #f7f7f8;
+  min-height: 100vh;
+  padding: 50px 20px;
+}
+
+.checkout-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.checkout-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+/* =========================
+   Grid
+========================= */
+
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+/* =========================
+   Cards
+========================= */
+
+.checkout-card,
+.summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   Inputs
+========================= */
+
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+input:focus {
+  border-color: #14a800;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20,168,0,0.15);
+}
+
+/* delivery fields grid */
+.delivery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+/* =========================
+   Checkbox
+========================= */
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+/* =========================
+   Button
+========================= */
+
+.checkout-btn {
+  margin-top: 25px;
+  width: 100%;
+  padding: 14px;
+  background: #14a800;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.checkout-btn:hover {
+  background: #0e8f00;
+}
+
+.checkout-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   Summary
+========================= */
+
+.checkout-summary {
+  position: sticky;
+  top: 30px;
+  height: fit-content;
+}
+
+.summary-items {
+  margin: 20px 0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.summary-total {
+  border-top: 1px solid #eee;
+  padding-top: 14px;
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* =========================
+   Error
+========================= */
+
+.checkout-error {
+  background: #ffeaea;
+  color: #d8000c;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 900px) {
+  .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-summary {
+    position: relative;
+    top: 0;
+  }
+}

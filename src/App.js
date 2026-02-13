@@ -32,7 +32,7 @@ import { initializeAuth, logoutUser } from "./utils/auth";
 import { logout, updateUserScore } from "./redux/slices/authSlice";
 import { addItem } from "./redux/slices/cartSlice";
 import useUserState from './hooks/useUserState';
-
+import checkOut from './pages/Checkout';
 
 
 // Admin pages
@@ -159,6 +159,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/my-account" element={<MyAccount />} />
         <Route path="/shops/:id" element={<ProductDetail />} />
+        <Route path="/checkout/:id" element={<Checkout />} />
         
         {/* Admin routes */}
         {/* <Route path="/admin/transactions" element={<ProtectedRoute element={<AdminTransactions />} requiredRole="admin" />} />

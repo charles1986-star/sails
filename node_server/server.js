@@ -24,6 +24,8 @@ import articlesCategories from './routes/articles-categories.js';
 import gamesCategories from './routes/games-categories.js';
 import shopCategories from './routes/shop-categories.js';
 import ordersRouter from './routes/orders.js';
+import mediaCmsRouter from './routes/media-cms.js';
+import mediaCmsCategories from './routes/media-cms-categories.js';
 
 // Create Express app
 const app = express();
@@ -396,6 +398,64 @@ async function initDatabase() {
     // Not fatal; log and continue
     console.error('Could not modify books.status enum:', err.message || err);
   }
+
+  // Media CMS tables (UUID primary keys)
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS media_categories (
+        id CHAR(36) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        slug VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT,
+        parent_id CHAR(36) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (parent_id) REFERENCES media_categories(id) ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS media_files (
+        id CHAR(36) PRIMARY KEY,
+        original_name VARCHAR(1024),
+        filename VARCHAR(1024),
+        file_path VARCHAR(1024),
+        public_url VARCHAR(1024),
+        file_type VARCHAR(50),
+        mime_type VARCHAR(255),
+        file_size BIGINT DEFAULT 0,
+        width INT DEFAULT NULL,
+        height INT DEFAULT NULL,
+        duration DOUBLE DEFAULT NULL,
+        category_id CHAR(36) DEFAULT NULL,
+        alt_text VARCHAR(512),
+        description TEXT,
+        tags JSON DEFAULT NULL,
+        uploaded_by INT DEFAULT NULL,
+        is_public TINYINT(1) DEFAULT 1,
+        usage_count INT DEFAULT 0,
+        is_deleted TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES media_categories(id) ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS media_usage (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        media_id CHAR(36) NOT NULL,
+        module_name VARCHAR(100) NOT NULL,
+        record_id VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (media_id) REFERENCES media_files(id) ON DELETE CASCADE,
+        INDEX idx_media_id (media_id),
+        INDEX idx_module (module_name)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+  } catch (err) {
+    console.error('Could not ensure media CMS tables:', err.message || err);
+  }
 }
 
 initDatabase();
@@ -676,6 +736,9 @@ app.use('/api/admin/articles-categories', articlesCategories);
 app.use('/api/admin/games-categories', gamesCategories);
 app.use('/api/admin/shop-categories', shopCategories);
 app.use('/api/shop-categories', shopCategories);
+// Media CMS (new)
+app.use('/api/admin', mediaCmsRouter);
+app.use('/api/admin', mediaCmsCategories);
 
 import db from './db.js';
 

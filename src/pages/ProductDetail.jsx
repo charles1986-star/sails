@@ -59,16 +59,49 @@ export default function ProductDetail({ onBuyNow, onAddToCart }) {
   const maxStock = product.stock ?? 99;
   const isQtyValid = qty > 0 && qty <= maxStock;
 
+  // const handleBuyNow = () => {
+  //   if (!isQtyValid) return;
+  //   setLoadingBuy(true);
+
+  //   // In future: call backend to create order / payment session
+  //   setTimeout(() => {
+  //     setLoadingBuy(false);
+  //     alert("Redirecting to checkout (simulated)");
+  //   }, 1200);
+  // };
+
   const handleBuyNow = () => {
     if (!isQtyValid) return;
-    setLoadingBuy(true);
 
-    // In future: call backend to create order / payment session
-    setTimeout(() => {
-      setLoadingBuy(false);
-      alert("Redirecting to checkout (simulated)");
-    }, 1200);
+    // Optional: save cart item or quantity in Redux / localStorage
+    onAddToCart && onAddToCart(product, qty);
+
+    // Redirect to checkout page
+    navigate(`/checkout/${product.id}`);
   };
+
+
+//   const handleBuyNow = async () => {
+//   if (!isQtyValid) return;
+//   setLoadingBuy(true);
+
+//   try {
+//     const res = await axios.post(`${API_URL}/checkout`, {
+//       productId: product.id,
+//       quantity: qty,
+//     });
+
+//     // Assume backend returns a checkout URL
+//     if (res.data.url) {
+//       window.location.href = res.data.url; // redirect to payment gateway
+//     }
+//   } catch (err) {
+//     alert("Failed to initiate checkout");
+//     console.error(err);
+//   } finally {
+//     setLoadingBuy(false);
+//   }
+// };
 
   const handleAddToCart = () => {
     if (!isQtyValid) return;
